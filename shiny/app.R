@@ -1,10 +1,8 @@
-library(DT)
 library(sf)
 library(caret)
 library(shiny)
 library(leaflet)
 library(tidyverse)
-source("global.R")
 
 load("ks_mix.Rdata")
 ks = ks_mix
