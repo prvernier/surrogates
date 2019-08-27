@@ -1,0 +1,260 @@
+---
+title: "Using R to evaluating the effectiveness of surrogates in ecoregion 89"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+author: "Pierre Vernier"
+output:
+  html_document:
+    keep_md: false
+    code_folding: hide
+    toc: true
+    toc_float:
+      collapsed: false
+    css: styles.css
+---
+
+<br>
+
+# Introduction
+
+In this vignette, we illustrate the basic steps for evaluating the effectiveness of four environmental surrogates for Caribou and three bird species (Boreal Chickadee, Canada Warbler, and Rusty Blackbird) that occur in the boreal region of Canada. Specifically, we focus on the data preparation and analysis steps that are at the core of the surrogates evaluation. The examples focus on one benchmark network located in ecoregion 89 in northcentral Canada. The network has high representation value for the four surrogates and we are interested in evaluating if it is also representative of our selected species. All the required input data have already been generated and are located in the "data" folder. Please contact me (pierre.vernier@gmail.com) if you come across any problems trying to replicate this sample analysis.
+
+<br>
+
+# Data preparation
+
+## Step 1 - Import libraries
+***
+We first need to import some libraries for reading and analysing raster and vector data, and three functions for calculating dissimilarity and representation metrics: <i>calcBC</i> for calculating the Bray-Curtis metric for categorical data, <i>calcKS</i> for calculating the Kolmogorov-Smirnov statistic for continuous data, and *calcRI* for calculating the representation index for continuous data. The functions are in the main folder but you will need to install the packages using the "install.packages" function i.e., install.packages("sf", "raster", "mapview", "tidyverse").
+
+```{r, message=FALSE, warning=FALSE}
+library(sf)
+library(raster)
+library(mapview)
+library(tidyverse)
+source("R/calcBC.R")
+source("R/calcKS.R")
+source("R/calcRI.R")
+```
+
+## Step 2 - Read datasets
+***
+We can now read the data into R. The study area consists of the ecoregion plus intersecting watersheds (FDAs). The ecoregion and FDA boundaries will be used as the reference areas in the analyses i.e., the region that the networks are compared to in terms of surrogates and test species. Networks are allowed to extend across ecoregion boundaries to enable hydrologic connectivity. The following datasets are available in the "data" folder:
+
+  * fda.shp - fda boundary shapefile (extent of study area)
+  * eco.shp - ecoregion boundary shapefile (extent of reference area within study area
+  * pas.shp - protected areas shapefile
+  * nets.shp - all networks shapefile
+  * nets_rep.shp - representative networks shapefile
+  * boch.tif - Boreal Chickadee density raster
+  * cmwa.tif - Cape May Warbler density raster
+  * rubl.tif - Rusty Blackbird density raster
+  * caribou.tif - Boreal Caribou RSF raster
+  * top_net_cmwa_caribou.shp - top representative network for Cape May Warbler and Caribou
+  * top_net_boch - top representative network for Boreal Chickadee
+  * top_net_cawa - top representative network for Canada Warbler
+
+```{r, message=FALSE, warning=FALSE}
+fda = st_read("eco89_data/fda.shp", quiet=T)
+eco = st_read("eco89_data/eco.shp", quiet=T)
+pas = st_read("eco89_data/pas.shp", quiet=T)
+net = st_read("eco89_data/nets_rep.shp", quiet=T) %>%
+    top_n(1) %>% 
+    dplyr::select(network)
+cmi = raster("eco89_data/cmi.tif")
+gpp = raster("eco89_data/gpp.tif")
+led = raster("eco89_data/led.tif")
+lcc = raster("eco89_data/lcc.tif")
+boch = raster("eco89_data/boch.tif")
+boch_median = round(cellStats(boch, median),1)
+boch_min = round(cellStats(boch, min),1)
+boch_max = round(cellStats(boch, max),1)
+cawa = raster("eco89_data/cawa.tif")
+cawa_median = round(cellStats(cawa, median),1)
+cawa_min = round(cellStats(cawa, min),1)
+cawa_max = round(cellStats(cawa, max),1)
+rubl = raster("eco89_data/rubl.tif")
+rubl_median = round(cellStats(rubl, median),1)
+rubl_min = round(cellStats(rubl, min),1)
+rubl_max = round(cellStats(rubl, max),1)
+caribou = raster("eco89_data/caribou.tif")
+caribou_median = round(cellStats(caribou, median),1)
+caribou_min = round(cellStats(caribou, min),1)
+caribou_max = round(cellStats(caribou, max),1)
+```
+
+## Step 3 - Rasterize boundary maps
+***
+
+In this step we will rasterize the boundary and network maps and ensure that all datasets have the same projection, extent, and resolution. This will make calculations of dissimilarity and represention indices much faster. Here we use the Boreal Chickadee raster (boch) to create a new empty raster with the desired extent (extent), resolution (res), and projection (crs). We then rasterize the three vector datasets to create three binary maps with a value of 1 for the region, FDAs, and network (field=1).
+
+```{r, message=FALSE, warning=FALSE}
+raster_template = raster(extent(boch), res=res(boch), crs=crs(boch))
+eco_raster = rasterize(eco, raster_template, field=1)
+fda_raster = rasterize(fda, raster_template, field=1)
+net_raster = rasterize(net, raster_template, field=1)
+```
+
+*Location of ecoregion 89.* The following map shows the location of ecoregion 89 (Hayes River Upland in the Boreal Shield ecozone) in the boreal region (blue) along with the extent of the intersecting watersheds (black outline) and a sample network (red) comprising of 3 ecological benchmarks. In the analysis that follows, we will evaluate the representativeness and representation of this network by comparing the distribution of values of each surrogate and test species within the network to its distribution within the ecoregion (reference area for representativeness analysis) and FDA (reference area for representation analysis).
+
+```{r, message=FALSE, warning=FALSE, out.width='100%'}
+mapview(fda, alpha.regions=0) + mapview(eco) + mapview(pas, col.regions="darkgreen") + mapview(net, col.regions="red", layer.name="Sample network")
+```
+
+<br>
+
+## Step 4 - Plot surrogates
+***
+The four plots show the distribution of climate moisture index (CMI), gross primary productivity (GPP), lake edge density (LED) and landcover (LCC) in ecoregion 89 and its intersecting watersheds. The sample benchmark network is also shown on each map.
+
+```{r out.width=c('50%', '50%'), fig.show='hold'}
+plot(cmi, main="Climate moisture index", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net), add=T, border="darkgreen", col="darkgreen")
+plot(st_geometry(eco), add=T, lwd=2)
+plot(gpp, main="Gross primary productivity", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net), add=T, border="darkgreen", col="darkgreen")
+plot(st_geometry(eco), add=T, lwd=2)
+plot(led, main="Lake-edge density", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net), add=T, border="darkgreen", col="darkgreen")
+plot(st_geometry(eco), add=T, lwd=2)
+plot(lcc, main="Landcover", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net), add=T, border="darkgreen", col="darkgreen")
+plot(st_geometry(eco), add=T, lwd=2)
+```
+
+## Step 5 - Plot test features
+***
+The four plots show the distribution of Boreal Chickadee (BOCH), Canada Warbler (CAWA), Rusty Blackbird, Boreal Caribou in ecoregion 89 and its intersecting watersheds. The sample benchmark network is also shown on each map.
+
+```{r out.width=c('50%', '50%'), fig.show='hold'}
+plot(boch, main="Boreal Chickadee", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net), add=T, border="darkgreen", col="darkgreen")
+plot(st_geometry(eco), add=T, lwd=2)
+plot(cawa, main="Canada Warbler", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net), add=T, border="darkgreen", col="darkgreen")
+plot(st_geometry(eco), add=T, lwd=2)
+plot(rubl, main="Rusty Blackbird", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net), add=T, border="darkgreen", col="darkgreen")
+plot(st_geometry(eco), add=T, lwd=2)
+plot(caribou, main="Boreal Caribou", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net), add=T, border="darkgreen", col="darkgreen")
+plot(st_geometry(eco), add=T, lwd=2)
+```
+
+# Evaluating representativeness
+
+## Step 6 - Calculate dissimilarity
+***
+In step 6, we calculate representation for biophysical surrogates and test features using dissimilarity metrics. We use the KS statistic for continuous maps and the Bray-Curtis metric for categorical data (land cover). We then summarize the results in a table. No statistical analysis can be performed in this example since we only calculated representativeness for one network in one ecoregion. In the full analysis (see Paper) we evaluated 11 test features across 30 ecoregions, with each ecoregion containing upwards of several thousand networks.
+
+
+```{r, message=FALSE, warning=FALSE}
+# Biophysical surrogates
+cmi_ks = calcKS(cmi, eco_raster, net_raster) # calculate KS statistic
+gpp_ks = calcKS(gpp, eco_raster, net_raster) # calculate KS statistic
+led_ks = calcKS(led, eco_raster, net_raster) # calculate KS statistic
+lcc_bc = calcBC(lcc, eco_raster, net_raster) # calculate Bray-Curtis statistic
+# Test features (Boreal Chickadee, Canada Warbler, Rusty Blackbird, and boreal caribou)
+boch_ks = calcKS(boch, eco_raster, net_raster) # calculate KS statistic
+cawa_ks = calcKS(cawa, eco_raster, net_raster) # calculate KS statistic
+rubl_ks = calcKS(rubl, eco_raster, net_raster) # calculate KS statistic
+caribou_ks = calcKS(caribou, eco_raster, net_raster) # calculate KS statistic
+x1 = c("CMI","GPP","LED","LCC","BOCH","CAWA","RUBL","Caribou")
+x2 = c("Climate moisture index","Gross primary productivity","Lake-edge density","Landcover","Boreal Chickadee","Canada Warbler","Rusty Blackbird","Boreal Caribou")
+x3 = c("Surrogate","Surrogate","Surrogate","Surrogate","Test feature","Test feature","Test feature","Test feature")
+#x4 = c("","","","",paste0(boch_median," (",boch_min,"-",boch_max,")"),paste0(cawa_median," (",cawa_min,"-",cawa_max,")"),paste0(rubl_median," (",rubl_min,"-",rubl_max,")"),paste0(caribou_median," (",caribou_min,"-",caribou_max,")"))
+x5 = c(cmi_ks,gpp_ks,led_ks,lcc_bc,boch_ks,cawa_ks,rubl_ks,caribou_ks)
+#x6 = c("","","","",boch_ri,cawa_ri,rubl_ri,caribou_ri)
+df = as_tibble(cbind(x1,x2,x3,x5))
+names(df) = c("Code","Description","Map type","Dissimilarity")
+knitr::kable(df)
+```
+
+In this example, the network we selected can be considered to be representative of the four surrogates using a threshold of 0.2 on a scale of 0-1, with lower values indicating increasing similarity. Other thresholds can be used. The two test species that we selected also had KS values less than 0.2. Thus, in this case, surrogates representativeness is associated with species representativeness. However, this is based on a sample size of one. By repeating this for many networks, we can model the relationship between surrogates representativeness and test features representativeness to assess whether or not a relationship exists. This is what we did in the analysis reported in paper.
+
+
+<br>
+
+# Maximizing representation
+
+## Step 7 - Calculate representation
+***
+
+In step 7, we calculate the representation index for test features using the ratio of the proportion of test features in a network to the proportion of the network in the planning region (see "Relationship between species and surrogates" in the Methods section). The table below provides the results using the representation index for the same network and species.
+
+
+```{r, message=FALSE, warning=FALSE}
+# Test features (Boreal Chickadee, Canada Warbler, Rusty Blackbird, and boreal caribou)
+boch_ri = calcRI(boch, fda_raster, net_raster) # calculate RI
+cawa_ri = calcRI(cawa, fda_raster, net_raster) # calculate RI
+rubl_ri = calcRI(rubl, fda_raster, net_raster) # calculate RI
+caribou_ri = calcRI(caribou, fda_raster, net_raster) # calculate RI
+cat("Representation Index\n--------------------\n","Boreal Chickadee:", boch_ri, "\n","Canada Warbler:", cawa_ri, "\n","Rusty Blackbird:", rubl_ri, "\n","Boreal Caribou:", caribou_ri, "\n")
+```
+
+In this example, the network we selected can be considered to be representative for Boreal Chickadee, Canada Warbler, and Caribou since the representation index has a value that is close to or greater than 1.
+
+## Step 8 - Maximize representation
+***
+
+In the final step of this vignette, we calculated the representation index for all networks that were created for ecoregion 89 and we then selected the top network for each test species among all networks and among represetative networks (based on surrogates).
+
+```{r, message=FALSE, warning=FALSE}
+# Test features (Boreal Chickadee, Canada Warbler, Rusty Blackbird, and boreal caribou)
+x1 = c("BOCH","CAWA","RUBL","Caribou")
+x2 = c("Boreal Chickadee","Canada Warbler","Rusty Blackbird","Boreal Caribou")
+x4 = c(paste0(boch_median," (",boch_min,"-",boch_max,")"),paste0(cawa_median," (",cawa_min,"-",cawa_max,")"),paste0(rubl_median," (",rubl_min,"-",rubl_max,")"),paste0(caribou_median," (",caribou_min,"-",caribou_max,")"))
+x6 = c(boch_ri,cawa_ri,rubl_ri,caribou_ri)
+x7 = c(1.202,1.712,1.395,1.132)
+x8 = c(1.266,2.027,1.715,1.715)
+df = as_tibble(cbind(x1,x2,x4,x6,x7,x8))
+names(df) = c("Code","Description","Median (range)","Sample network","Top rep network","Top network")
+knitr::kable(df)
+```
+
+The results indicate that, for each test species, the best network for that species came from the larger set of networks not just the networks that are representative for the four surrogates. We also note, that representative networks were also identified for the four species amongst the set of representative networks. Interestingly, the same network was most representative for both Caribou and Rusty Blackbird.
+
+The map below shows the location of the top networks for Boreal Chickadee ("BOCH"), Canada Warbler ("CAWA") and Rusty Blackbird and Caribou ("RUBL_CARIBOU"). The sample networks used in the previous steps is also shown in yellow.
+
+```{r, message=FALSE, warning=FALSE, out.width=c('50%', '50%'), fig.show='hold'}
+#all_nets = st_read("C:/Users/PIVER37/Dropbox (BEACONs)/BEACONs Share/surrogates/data/networks/clusters/eco_89_networks.shp", quiet=T)
+#net_rubl_cari = filter(all_nets, network=="PB_9905_PB_18710_PB_20118")
+#net_boch = filter(all_nets, network=="PB_64180_PB_144445_PB_147984")
+#net_cawa = filter(all_nets, network=="PB_24915_PB_24938_PB_27573")
+net_rubl_cari = st_read("eco89_data/top_net_rubl_caribou.shp", quiet=T)
+net_boch = st_read("eco89_data/top_net_boch.shp", quiet=T)
+net_cawa = st_read("eco89_data/top_net_cawa.shp", quiet=T)
+#mapview(fda, alpha.regions=0, layer.name="FDAs", legend=FALSE) + mapview(eco, alpha.regions=0.2, layer.name="Ecoregion", legend=FALSE) + mapview(net_boch, col.regions="darkgreen", layer.name="BOCH") + mapview(net_cawa, col.regions="blue", layer.name="CAWA") + mapview(net_rubl_cari, col.regions="red", layer.name="RUBL & Caribou") + mapview(net, col.regions="yellow", layer.name="Sample Network")
+plot(boch, main="Boreal Chickadee", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net_boch), add=T, border="red", col="red")
+plot(st_geometry(eco), add=T, lwd=2)
+plot(cawa, main="Canada Warbler", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net_cawa), add=T, border="red", col="red")
+plot(st_geometry(eco), add=T, lwd=2)
+plot(rubl, main="Rusty Blackbird", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net_rubl_cari), add=T, border="red", col="red")
+plot(st_geometry(eco), add=T, lwd=2)
+plot(caribou, main="Boreal Caribou", axes=FALSE)
+plot(st_geometry(fda), add=T, lwd=1, border="black")
+plot(st_geometry(net_rubl_cari), add=T, border="red", col="red")
+plot(st_geometry(eco), add=T, lwd=2)
+```
+
+```{r, message=FALSE, warning=FALSE}
+# Uncomment the code below to see four maps as linked maps. This provides an alternative way of looking at the top networks.
+#m3 = mapview(fda, alpha.regions=0, layer.name="FDAs", legend=FALSE) + mapview(net_boch, col.regions="darkgreen", layer.name="BOCH")
+#m4 = mapview(fda, alpha.regions=0, layer.name="FDAs", legend=FALSE) + mapview(net_cawa, col.regions="blue", layer.name="CAWA")
+#m5 = mapview(fda, alpha.regions=0, layer.name="FDAs", legend=FALSE) + mapview(net_rubl_cari, col.regions="red", layer.name="RUBL & Caribou")
+#m6 = mapview(fda, alpha.regions=0, layer.name="FDAs", legend=FALSE) + mapview(net, col.regions="yellow", layer.name="Sample network")
+#leafsync::sync(m3, m4, m5, m6)
+```
