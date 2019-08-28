@@ -8,6 +8,10 @@ Evaluating the Effectiveness of Biodiversity Surrogates
 
 Beacons et al. <i>in prep</i>. Evaluating the Effectiveness of Biodiversity Surrogates for Conservation Planning in the Boreal Region of Canada.
 
+## Shiny app
+
+  * https://prvernier.shinyapps.io/surrogates/ 
+
 ## Supporting Information
 
 * [Appendix S1. Bird species common and latin names](https://github.com/prvernier/surrogates/blob/master/supp_info/bird_species.md)
