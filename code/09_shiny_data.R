@@ -19,7 +19,7 @@ ks_repnorep = read_csv("output/tables/species_surrogates_ks_repnorep.csv")
 save(ks_repnorep, file = "shiny/ks_repnorep.Rdata")
 
 # KS table (mix of random sample and all rep and nonrep networks)
-x1 = mutate(ks, distance=NULL, sumgap90=NULL, rep=0.5)
+x1 = mutate(ks, sumgap90=NULL, rep=0.5)
 x2 = ks_repnorep
 x1 = filter(x1, !network %in% x2$network)
 ks_mix = bind_rows(x2,x1)

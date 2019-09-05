@@ -41,9 +41,11 @@ for (eco in ecoList) {
         nets_nonrep = read_sf(v_nets_nonrep) %>% st_transform(crs=prj) %>% filter(top10km==1)
         #if (nrow(nets)>1000) nets = sample_n(nets, rnd)
         x_rep = nets_rep %>% st_set_geometry(NULL) %>%
-            dplyr::select(network,ks_cmi,ks_gpp,ks_led,bc_lcc)
+            #dplyr::select(network,ks_cmi,ks_gpp,ks_led,bc_lcc)
+            dplyr::select(network,ks_cmi,ks_gpp,ks_led,bc_lcc,distance,sumGap90,mdr,intact,intact_eco,coverage,overlap,net_km2,eco_km2)
         x_nonrep = nets_nonrep %>% st_set_geometry(NULL) %>%
-            dplyr::select(network,ks_cmi,ks_gpp,ks_led,bc_lcc)
+            #dplyr::select(network,ks_cmi,ks_gpp,ks_led,bc_lcc)
+            dplyr::select(network,ks_cmi,ks_gpp,ks_led,bc_lcc,distance,sumGap90,mdr,intact,intact_eco,coverage,overlap,net_km2,eco_km2)
 
 ### STOPPED HERE...
 

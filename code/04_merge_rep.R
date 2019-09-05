@@ -42,8 +42,8 @@ for (ecoz in ecozones) {
     z = z + 1
 }
 # drop these - not needed for ecoregion level
-zzz = mutate(zz, ecozone=paste0("z",ecozone), mdr=NULL, intact=NULL, intact_eco=NULL, coverage=NULL, overlap=NULL, net_km2=NULL, eco_km2=NULL, ecoprovince=NULL) %>%
-    rename(sumgap90=sumGap90,allbirds=AllBirds,forestbirds=ForestBirds,allwaterfowl=AllWaterfowl,cavitynesters=CavityNesters,groundnesters=GroundNesters,overwaternesters=OverwaterNesters)
+zzz = mutate(zz, ecozone=paste0("z",ecozone), mdr=NULL, intact=NULL, distance=NULL, coverage=NULL, overlap=NULL, net_km2=NULL, eco_km2=NULL, ecoprovince=NULL) %>%
+    rename(sumgap90=sumGap90,allbirds=AllBirds,forestbirds=ForestBirds,allwaterfowl=AllWaterfowl,cavitynesters=CavityNesters,groundnesters=GroundNesters,overwaternesters=OverwaterNesters) #, intactness=intact_eco, intact_eco=NULL)
 # write merged ks file
 write_csv(zzz, "output/tables/species_surrogates_ks.csv")
 

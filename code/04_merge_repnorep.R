@@ -45,5 +45,11 @@ for (ecoz in ecozones) {
 zzz = mutate(zz, ecozone=paste0("z",ecozone), ecoprovince=NULL) %>%
     rename(allbirds=AllBirds,forestbirds=ForestBirds,allwaterfowl=AllWaterfowl,cavitynesters=CavityNesters,groundnesters=GroundNesters,overwaternesters=OverwaterNesters) %>%
     mutate(rep=if_else(ks_cmi<=0.2 & ks_gpp<=0.2 & ks_led<=0.2 & bc_lcc<=0.2,1,0))
+
+# add intact_eco
+intact = read_csv("output/tables/species_surrogates_ks.csv") %>%
+    dplyr::select(ecoregion, intact_eco) %>% unique()
+zzz = left_join(zzz, intact)
+
 # write merged ks file
 write_csv(zzz, "output/tables/species_surrogates_ks_repnorep.csv")

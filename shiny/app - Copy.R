@@ -2,11 +2,15 @@ library(sf)
 library(caret)
 library(shiny)
 library(leaflet)
+library(lattice)
 library(tidyverse)
 
 load("ks_mix.Rdata")
-ks = mutate(ks_mix, ecozone=as.character(substr(ecozone,2,nchar(ecozone))))
+#ks = ks_mix
+ks = mutate(ks_mix, ecozone=as.character(substr(ecozone,2,nchar(ecozone)))) %>% filter(rep==0 | rep==1)
 zone = select(ks, ecozone, ecoregion, intact_eco) %>% unique()
+load("ks_repnorep.Rdata")
+ks_rnr = mutate(ks_repnorep, ecozone=as.character(substr(ecozone,2,nchar(ecozone))))
 load("stats.Rdata")
 load("ecor_maps.Rdata")
 songbirds = c('BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR')
@@ -23,9 +27,12 @@ ui = fluidPage(
 				choices = c('ALLBIRDS','FORESTBIRDS',songbirds,'ALLWATERFOWL','CAVITYNESTERS','GROUNDNESTERS','OVERWATERNESTERS'),
 				selected = "CAWA"),
             hr(),
-            checkboxInput("repnorep", "Use only rep and nonrep networks", TRUE),
+            #sliderInput(inputId = "ks", "Maximum ratio for rep/nonrep or nonrep/rep networks:", min = 0, max = 100, value = c(100), step=10),
+            #hr(),
+            checkboxInput("repnorep", "Use only rep and nonrep networks"),
+            checkboxInput("rep", "Use binary variable for surrogates", FALSE),
             checkboxInput("ave", "Show averages at bottom of table", FALSE),
-            hr(),           
+            hr(),
             downloadButton('downloadData',"Download data")
        ),
 	
@@ -38,13 +45,13 @@ ui = fluidPage(
                 br(),
                 leafletOutput("ecormap", height=600)
                 ),
-            tabPanel("Observed vs predicted",
+            #tabPanel("Fitted table",
+            #    tableOutput("tab2")
+            #    ),
+            tabPanel("Plot output",
                 br(),
                 plotOutput("plot1")
-                ),
-            tabPanel("Intactness vs R-squared",
-                br(),
-                plotOutput("plot2")
+                #plotOutput("plot2")
                 ),
             tabPanel("Definitions",
                 br(),
@@ -63,6 +70,8 @@ server = function(input, output) {
         spp = tolower(input$species)
         assign("tmp", ks[[spp]])
         ks = mutate(ks, test = tmp)
+        assign("tmp", ks_rnr[[spp]])
+        ks_rnr = mutate(ks_rnr, test = tmp)
         
         # create empty summary table
         z = tibble(Ecozone=as.character(), Ecoregion=as.character(), Intactness=as.numeric(), Networks=as.integer(), CMI=as.character(), 
@@ -79,11 +88,9 @@ server = function(input, output) {
         # run models for each ecoregion
         for (eco in eco_list) {
             if (input$repnorep==TRUE) {
-                x = filter(ks, ecoregion==eco & (rep==0 | rep==1))
+                x = filter(ks_rnr, ecoregion==eco)
             } else {
                 x = filter(ks, ecoregion==eco)
-                minNet = min(table(x$rep))
-                x = group_by(x, rep) %>% sample_n(minNet) %>% ungroup()
             }
             if (sum(!is.na(x[spp])) > 2) {
                 
@@ -91,7 +98,11 @@ server = function(input, output) {
                 x = filter(x, !is.na(x[[spp]]))
                 
                 # select model
-                m1 = lm(test ~ ks_cmi + ks_gpp + ks_led + bc_lcc, data=x)
+                if (input$repnorep==TRUE & input$rep==TRUE) {
+                    m1 = lm(test ~ rep, data=x)
+                } else {
+                    m1 = lm(test ~ ks_cmi + ks_gpp + ks_led + bc_lcc, data=x)
+                }
                 
                 # calculate variable importance
                 vi = varImp(m1)
@@ -104,6 +115,7 @@ server = function(input, output) {
                 rnet0.5 = length(x$rep[x$rep==0.5])
                 rnet0 = length(x$rep[x$rep==0])
                 if (input$repnorep==FALSE) {
+                    #z[i,"Networks"] = paste0("allnets=",nrow(x))
                     z[i,"Networks"] = paste0("rep=",rnet1,", mix=",rnet0.5,", nrep=",rnet0)
                 } else {
                     z[i,"Networks"] = paste0("rep=",rnet1,", nrep=",rnet0)
@@ -147,7 +159,6 @@ server = function(input, output) {
             z[i,"Ecozone"] = ""
             z[i,"Ecoregion"] = ""
             z[i,"Networks"] = ""
-            z[i,"Intactness"] = ""
             z[i,"CMI"] = paste0(sprintf("%.3f",sum_cmi/(i-1))," (",sprintf("%.2f",sum_cmi_vi/(i-1)),")")
             z[i,"GPP"] = paste0(sprintf("%.3f",sum_gpp/(i-1))," (",sprintf("%.2f",sum_gpp_vi/(i-1)),")")
             z[i,"LED"] = paste0(sprintf("%.3f",sum_led/(i-1))," (",sprintf("%.2f",sum_led_vi/(i-1)),")")
@@ -168,20 +179,20 @@ server = function(input, output) {
         spp = tolower(input$species)
         assign("tmp", ks[[spp]])
         ks = mutate(ks, test = tmp)
+        assign("tmp", ks_rnr[[spp]])
+        ks_rnr = mutate(ks_rnr, test = tmp)
 
         if (input$species %in% songbirds) {
             eco_list = stats$zone[stats$species==spp & stats$pct>0]
         } else {
-            eco_list = unique(ks$ecoregion)
+            eco_list = unique(ks_rnr$ecoregion)
         }
         i = 1
         for (eco in eco_list) {
             if (input$repnorep==TRUE) {
-                x = filter(ks, ecoregion==eco & (rep==0 | rep==1))
-           } else {
+                x = filter(ks_rnr, ecoregion==eco)
+            } else {
                 x = filter(ks, ecoregion==eco)
-                minNet = min(table(x$rep))
-                x = group_by(x, rep) %>% sample_n(minNet) %>% ungroup()
             }
             if (sum(!is.na(x[spp])) > 2) {
                 x = filter(x, !is.na(x[[spp]]))
@@ -192,33 +203,34 @@ server = function(input, output) {
                 x1 = rep(eco, nrow(x))
                 x2 = x$test
                 x3 = x$fitted
-                x4 = x$rep
             } else {
                 x1 = c(x1, rep(eco, nrow(x)))
                 x2 = c(x2, x$test)
                 x3 = c(x3, x$fitted)
-                x4 = c(x4, x$rep)
             }
             i = i + 1
         }
-        z = tibble(ecoregion=x1, observed=x2, fitted=x3, rep=x4)
+        z = tibble(ecoregion=x1, observed=x2, fitted=x3)
         return(z)
    })
 
+    #output$tab2 <- renderTable({
+    #    xyz = testdata2()
+    #})
+
     output$plot1 <- renderPlot({
         z = testdata2()
-        if (length(unique(z$ecoregion)) <= 12) {
-            n = 4
-        } else if (length(unique(z$ecoregion)) > 12 & length(unique(z$ecoregion)) <= 20) {
-            n = 5
-        } else if (length(unique(z$ecoregion)) > 28 & length(unique(z$ecoregion)) <= 36) {
-            n = 6
-        } else {
-            n = 7
+        panel.smoother <- function(x, y) {
+          panel.xyplot(x, y, col="blue", pch=1) # show points 
+          panel.loess(x, y, col="red", lwd=2)  # show smoothed line 
+          panel.lines(x=0:1, y=0:1, lty=2, col="black")
+          #panel.lines(x=0:1, y=0.2, lty=2, col="black")
+          #panel.lines(y=0:1, x=0.2, lty=2, col="black")
         }
-        p <- ggplot(z, aes(fitted, observed)) + geom_point(aes(colour=factor(rep))) + geom_smooth(method='lm')
-        p + facet_wrap(vars(ecoregion), ncol=n) #, scales = "free_y")
-    }, height=800)
+        xyplot(z$observed~z$fitted|as.factor(z$ecoregion), 
+            panel=panel.smoother,
+            main=paste0(input$species,": Scatterplots by Ecoregion"), ylab="Observed KS values", xlab="Fitted KS values")
+    })
 
     output$plot2 <- renderPlot({
         z = testdata()
