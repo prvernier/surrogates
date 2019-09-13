@@ -4,11 +4,12 @@ library(shiny)
 library(leaflet)
 library(tidyverse)
 
-load("ks_mix.Rdata")
-ks = mutate(ks_mix, ecozone=as.character(substr(ecozone,2,nchar(ecozone))))
-zone = select(ks, ecozone, ecoregion, intact_eco) %>% unique()
 load("stats.Rdata")
 load("ecor_maps.Rdata")
+load("ks_mix.Rdata")
+
+ks = mutate(ks_mix, ecozone=as.character(substr(ecozone,2,nchar(ecozone))))
+zone = select(ks, ecozone, ecoregion, intact_eco) %>% unique()
 songbirds = c('BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR')
 
 ui = fluidPage(
@@ -46,6 +47,18 @@ ui = fluidPage(
                 br(),
                 plotOutput("plot2")
                 ),
+            tabPanel("Ecozone boxplots",
+                br(),
+                plotOutput("plot3")
+                ),
+            tabPanel("Coefficient boxplots",
+                fluidRow(
+                  column(6,plotOutput(outputId="plot4", width="500px",height="300px")),  
+                  column(6,plotOutput(outputId="plot5", width="500px",height="300px")),
+                  column(6,plotOutput(outputId="plot6", width="500px",height="300px")),  
+                  column(6,plotOutput(outputId="plot7", width="500px",height="300px"))
+                )
+                ),
             tabPanel("Definitions",
                 br(),
                 htmlOutput("methods")
@@ -80,6 +93,13 @@ server = function(input, output) {
         for (eco in eco_list) {
             if (input$repnorep==TRUE) {
                 x = filter(ks, ecoregion==eco & (rep==0 | rep==1))
+                nr = sum(x$rep) # number of rep networks
+                nnr = nrow(x) - nr # number of non-rep networks
+                if (nnr > 10*nr) {
+                    x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,10*nr)) %>% ungroup()
+                } else if (nr > 10*nnr) {
+                    x = group_by(x, rep) %>% sample_n(if_else(rep==1,10*nnr,nnr)) %>% ungroup()
+                }
             } else {
                 x = filter(ks, ecoregion==eco)
                 minNet = min(table(x$rep))
@@ -226,6 +246,50 @@ server = function(input, output) {
         abline(lm(z$R2 ~ z$Intactness), col="red")
         #lines(lowess(z$Intactness, z$R2), col="blue")
     }, width=600)
+
+    output$plot3 <- renderPlot({
+        z = testdata()
+        z$R2 = as.numeric(z$R2)
+        bp = ggplot(z, aes(x=Ecozone, y=R2)) + geom_boxplot(aes(group=Ecozone))
+        bp + ggtitle("Ecoregion-level R2 values by Ecozone")
+        bp + scale_y_continuous(limits=c(0,1), breaks=seq(0,1,0.1))
+    }, height=600)
+
+    output$plot4 <- renderPlot({
+        z = testdata()
+        a1 = unlist(str_split(z$CMI, " "))
+        b1 = a1[seq(1,length(a1),2)]
+        z = mutate(z, b_cmi = as.numeric(b1))
+        bp1 = ggplot(z, aes(x=Ecozone, y=b_cmi)) + geom_boxplot(aes(group=Ecozone))
+        bp1 + ggtitle("CMI effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1)
+    })
+
+    output$plot5 <- renderPlot({
+        z = testdata()
+        a2 = unlist(str_split(z$GPP, " "))
+        b2 = a2[seq(1,length(a2),2)]
+        z = mutate(z, b_gpp = as.numeric(b2))
+        bp2 = ggplot(z, aes(x=Ecozone, y=b_gpp)) + geom_boxplot(aes(group=Ecozone))
+        bp2 + ggtitle("GPP effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1)
+    })
+
+    output$plot6 <- renderPlot({
+        z = testdata()
+        a3 = unlist(str_split(z$LED, " "))
+        b3 = a3[seq(1,length(a3),2)]
+        z = mutate(z, b_led = as.numeric(b3))
+        bp3 = ggplot(z, aes(x=Ecozone, y=b_led)) + geom_boxplot(aes(group=Ecozone))
+        bp3 + ggtitle("LED effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1)
+    })
+
+    output$plot7 <- renderPlot({
+        z = testdata()
+        a4 = unlist(str_split(z$LCC, " "))
+        b4 = a4[seq(1,length(a4),2)]
+        z = mutate(z, b_lcc = as.numeric(b4))
+        bp4 = ggplot(z, aes(x=Ecozone, y=b_lcc)) + geom_boxplot(aes(group=Ecozone))
+        bp4 + ggtitle("LCC effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1)
+    })
 
     output$downloadData <- downloadHandler(
         filename = function() {

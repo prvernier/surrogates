@@ -1,3 +1,17 @@
+# Miscellaneous notes
+
+## Selection of test features
+
+### Boreal songbirds
+
+As part of a pan-boreal project, five boreal songbird species were identified as forestry-relevant, and selected based on threat status, geographic distribution, and biology: Blackburnian Warbler (BLWA), Black-throated Green Warbler (BTNW), Canada Warbler (CAWA), Cape May Warbler (CMWA), and Olive-sided Flycatcher (OSFL). These species are representative of broad habitat types that occur across the boreal. Blackburnian Warbler is associated with mixedwood forests consisting of 50-70% conifer species by canopy; Black-throated Green Warbler is associated with mixedwood forest with <= 30 percent conifer species (mainly spruce) by canopy; Canada Warbler is associated with relatively pure deciduous forests; Cape May Warbler is associated with relatively pure conifer forests; and Olive-sided Flycatcher is associated with forested wetlands.
+
+The NWBLCC selected a suite of priority focal species based on vulnerability to future landscape change as well as social/cultural importance. After consulting with partner organizations and external experts, the NWBLCC identified a set of 10 focal species that includes two species groups (Table 1). All species reside within both Canada and Alaska. The waterfowl species were merged into a Waterfowl Guild because data are scarce. The five species of Old‐Forest Birds were selected based on their association with old forest and predicted decline under climate change (Stralberg et al. 2014). Other species considered, but not included, were brown bear, golden eagle, snowshoe hare, and two old‐forest birds: Blackpoll Warbler and Common Redpoll.
+
+  * Rusty Blackbird (Euphagus carolinus)
+  * Old‐Forest Birds ‐ Boreal Chickadee (Poecile hudsonicus), Brown Creeper (Certhia americana), Pine Grosbeak (Pinicola enucleator), White‐Winged Crossbill (Loxia leucoptera), Swainson's Thrush (Catharus ustulatus)
+  * Waterfowl Guild ‐ Trumpeter Swan (Cygnus buccinator), Lesser Scaup (Aythya affinis), White‐Winged Scoter (Melanitta deglandi)
+
 # Combining benchmarks into networks
 
 We constructed networks for each ecoregion by combining multiple benchmarks and assessing the ability of each network to represent its respective ecoregion for the four surrogates. We assessed network representation using a target-based method and the MDR value. The MDR-based representation targets were based on the proportional coverage of the surrogates within networks. This required that the study region maps of continuous surrogates be assigned to classes. CMI was classified using class widths of 5 cm water/yr, GPP and LED were classified into class widths of 0.05 kg C/m2/yr and 0.05 km/km2 respectively. Representation was assessed by comparing the area of each class inside the network to MDR-based targets for the ecoregion. MDR-based targets for each class were calculated by multiplying the proportion of the class in the ecoregion by the MDR. For example, if the class made up 10% of the ecoregion, the target would be 0.1 x MDR. For an MDR-based target to be achieved, a single benchmark in the network must contain at least 90% of the target area. We used a 90% threshold because requiring the full target to be met limited the networks available for analysis.

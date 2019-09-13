@@ -7,7 +7,8 @@ library(caret)
 
 pba_nwb_birds = c('blbw','boch','brcr','btnw','cawa','cmwa','osfl','pigr','rubl','swth','wwcr')
 spp_to_use = c('AllBirds','ForestBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters',pba_nwb_birds)
-x = read_csv("../output/ecozones/ecozones_networks_spp_1000.csv")
+#x = read_csv("../output/ecozones/ecozones_networks_spp_1000.csv")
+x = read_csv("../tables/species_surrogates_ks.csv")
 stats = read_csv("code/input/species_stats_clipped.csv")
 rnd = 1000
 

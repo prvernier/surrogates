@@ -58,7 +58,8 @@ fda = st_read("eco89_data/fda.shp", quiet=T)
 eco = st_read("eco89_data/eco.shp", quiet=T)
 pas = st_read("eco89_data/pas.shp", quiet=T)
 net = st_read("eco89_data/nets_rep.shp", quiet=T) %>%
-    top_n(1) %>% 
+    filter(network=='PB_10140_PB_16336_PB_26952') %>%
+    #top_n(1) %>% 
     dplyr::select(network)
 cmi = raster("eco89_data/cmi.tif")
 gpp = raster("eco89_data/gpp.tif")
