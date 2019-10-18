@@ -1,8 +1,7 @@
 # Calculate stats for each species in each ecoregion
 # The pct field uses the range maps to estimate proportion of range in ecoregion
 # All the stats (mean, p90, etc.) are based on the density clipped to range maps
-# Pierre Vernier
-# 2019-09-11
+# PV 2019-09-11
 
 library(raster)
 library(tidyverse)

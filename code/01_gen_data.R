@@ -1,6 +1,5 @@
 # Generate GIS database with common extent, projection & resolution
-# Pierre Vernier
-# 2019-07-23
+# PV 2019-10-17
 
 library(sf)
 library(raster)
@@ -14,7 +13,7 @@ prj = "+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=G
 
 # Original datasets
 fda_shp = st_read('../data/vector/pan_ecoregions_fda_v3.shp') %>% st_transform(crs=prj)
-eco_shp = st_read('data/vector/pba_eco.shp') %>% st_transform(crs=prj)
+eco_shp = st_read('../data/vector/pba_eco.shp') %>% st_transform(crs=prj)
 
 # Create raster template of study area (ecoregions + fda) and ecoregions
 raster_template = raster(extent(fda_shp), res=4000, crs=prj)
@@ -29,6 +28,13 @@ lakes = raster('../../../BEACONs Share/surrogates/data/raster/large_lakes.tif')
 lakes = projectRaster(lakes, fda_raster)
 lakes = mask(lakes, fda_raster)
 writeRaster(lakes, "data/raster/lakes.tif", overwrite=TRUE)
+
+
+# CARIBOU
+caribou = raster('../../../BEACONs Share/surrogates/data/raster/caribou.tif')
+caribou = projectRaster(caribou, fda_raster)
+caribou = raster::mask(caribou, fda_raster)
+writeRaster(caribou, paste0("data/caribou/caribou.tif"), overwrite=TRUE)
 
 
 # WATERFOWL

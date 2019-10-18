@@ -1,6 +1,6 @@
 # Generate networks statistics
-# 2019-08-21
-# P Vernier
+# See also net_summary_stats.R in "Dropbox (BEACONs)/BEACONs Share/surrogates/code"
+# PV 2019-08-21
 
 library(sf)
 library(tidyverse)

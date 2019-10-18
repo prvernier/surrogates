@@ -1,6 +1,5 @@
-# Merge nets_pba_spp_ks_1000 files by ecozone
-# Pierre Vernier
-# 2019-08-16
+# Merge eco_xxx_nets_spp_ks files by ecozone
+# PV 2019-08-16
 
 library(sf)
 library(tidyverse)

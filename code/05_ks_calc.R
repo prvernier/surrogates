@@ -1,6 +1,5 @@
-# Calculate KS for songbird species and groups, and waterfowl guilds
-# Pierre Vernier
-# 2019-08-23
+# Calculate KS for test species in rep and nonrep networks
+# PV 2019-10-17
 
 library(sf)
 library(velox)
@@ -8,51 +7,45 @@ library(raster)
 library(tidyverse)
 
 #memory.limit(320000)
-test = read_csv("code/input/species_stats_clipped.csv")
 prj = "+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
 set.seed = 6049489181
 rnd = 1000
 dropDir = 'C:/Users/PIVER37/Dropbox (BEACONs)/'
 net_stats = read_csv("code/input/net_summary_stats.csv")
-eco_to_use = net_stats$ecoregion[net_stats$rep_gd10km>0]
-#birds = read_csv("code/input/bam_density_80_species.csv") %>% pull(Code) %>% tolower()
-#waterfowl = c('abdu','agwt','amwi','buff','bwte','canv','gadw','ggol','gmer','gsca','gsco','mall','nopi','nsho','redh','rndu','rudu')
 birds = c('blbw','boch','brcr','btnw','cawa','cmwa','osfl','pigr','rubl','swth','wwcr') # pba_nwb
-sppList = c('AllBirds','ForestBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters',birds) #pba_nwb_birds)
+sppList = c('Caribou','AllBirds','ForestBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters',birds) #pba_nwb_birds)
 ecoList = read_csv('code/input/pan_eco_mdr_v4.csv') %>% pull(ecoregion) %>% sort()
+x = read_csv('C:/Users/PIVER37/Dropbox (BEACONs)/BEACONs Share/surrogates/data/networks/revised_networks_sept2019/network_summary.csv')
+ecoList = sort(x$ecoregion[x$use_in_analysis==1])
 fda_shp = read_sf('data/vector/pan_ecoregions_fda_v3.shp') %>% st_transform(crs=prj)
 
 for (eco in ecoList) {
     cat("Ecoregion",eco,"...\n")
     flush.console()
 
-    netDir = paste0(dropDir,'BEACONs Share/surrogates/data/networks/clusters/')
+    netDir = paste0(dropDir,'BEACONs Share/surrogates/data/networks/clusters2/')
     fda = filter(fda_shp, Ecoregion==eco)
     v_nets_rep = paste0(netDir,"eco_",eco,"_networks_rep.shp")
     v_nets_nonrep = paste0(netDir,"eco_",eco,"_networks_nonrep.shp")
 
-    if (eco %in% eco_to_use & file.exists(v_nets_rep)) {
+    if (file.exists(v_nets_rep) & file.exists(v_nets_nonrep)) {
         
         # Read network shapefile and extract required attributes to a tibble
         v_eco = read_sf("data/vector/pan_eco_mdr_v4.shp") %>% st_transform(crs=prj) %>% filter(Ecoreg==eco)
         v_fda = read_sf("data/vector/pan_ecoregions_fda_v3.shp") %>% st_transform(crs=prj) %>% filter(Ecoregion==eco)
 
-        nets_rep = read_sf(v_nets_rep) %>% st_transform(crs=prj) %>% filter(top10km==1)
-        nets_nonrep = read_sf(v_nets_nonrep) %>% st_transform(crs=prj) %>% filter(top10km==1)
+        nets_rep = read_sf(v_nets_rep) %>% st_transform(crs=prj) #%>% filter(top10km==1)
+        nets_nonrep = read_sf(v_nets_nonrep) %>% st_transform(crs=prj) #%>% filter(top10km==1)
         #if (nrow(nets)>1000) nets = sample_n(nets, rnd)
-        x_rep = nets_rep %>% st_set_geometry(NULL) %>%
-            #dplyr::select(network,ks_cmi,ks_gpp,ks_led,bc_lcc)
-            dplyr::select(network,ks_cmi,ks_gpp,ks_led,bc_lcc,distance,sumGap90,mdr,intact,intact_eco,coverage,overlap,net_km2,eco_km2)
-        x_nonrep = nets_nonrep %>% st_set_geometry(NULL) %>%
-            #dplyr::select(network,ks_cmi,ks_gpp,ks_led,bc_lcc)
-            dplyr::select(network,ks_cmi,ks_gpp,ks_led,bc_lcc,distance,sumGap90,mdr,intact,intact_eco,coverage,overlap,net_km2,eco_km2)
-
-### STOPPED HERE...
+        x_rep = nets_rep %>% st_set_geometry(NULL)
+        x_nonrep = nets_nonrep %>% st_set_geometry(NULL)
 
         # Create raster stack
         fda_stack = eco_stack = stack()
         for (spp in sppList) {
-            if (spp %in% birds) {
+            if (spp=="Caribou") {
+                r = raster(paste0('data/caribou/caribou.tif'))
+            } else if (spp %in% birds) {
                 r = raster(paste0('data/songbirds/',spp,".tif"))
             } else if (spp %in% c("AllBirds","ForestBirds")) {
                 r = raster(paste0('data/songbirds/',spp,".tif"))
@@ -108,6 +101,6 @@ for (eco in ecoList) {
         }
 
         x = bind_rows(x_rep, x_nonrep)
-        write_csv(x, paste0("output/ecoregions_repnorep/",eco,"_nets_pba_spp_ks_",rnd,".csv"))
+        write_csv(x, paste0("output/ecoregions_repnorep/eco_",eco,"_nets_spp_ks.csv"))
     }
 }

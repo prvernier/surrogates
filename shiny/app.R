@@ -6,6 +6,7 @@ library(tidyverse)
 
 load("stats.Rdata")
 load("ecor_maps.Rdata")
+load("ecoz_maps.Rdata")
 load("ks_mix.Rdata")
 
 ks = mutate(ks_mix, ecozone=as.character(substr(ecozone,2,nchar(ecozone))))
@@ -250,7 +251,7 @@ server = function(input, output) {
     output$plot3 <- renderPlot({
         z = testdata()
         z$R2 = as.numeric(z$R2)
-        bp = ggplot(z, aes(x=Ecozone, y=R2)) + geom_boxplot(aes(group=Ecozone))
+        bp = ggplot(z, aes(x=Ecozone, y=R2)) + geom_boxplot(aes(group=Ecozone), varwidth = TRUE)
         bp + ggtitle("Ecoregion-level R2 values by Ecozone")
         bp + scale_y_continuous(limits=c(0,1), breaks=seq(0,1,0.1))
     }, height=600)
@@ -315,10 +316,12 @@ server = function(input, output) {
         leaflet(ecor_maps) %>%
             addProviderTiles("Esri.NatGeoWorldMap", "Esri.NatGeoWorldMap") %>%
             addPolygons(data=ecor_maps, fillColor = ~pal(unlist(i)), fill=T, weight=1, color="black", fillOpacity=1, group="Ecoregions", popup=ecoPopup) %>%
+            addPolygons(data=ecoz_maps, fill=F, weight=3, color="black", group="Ecozones") %>%
             addLayersControl(position = "topright",
             baseGroups=c("Esri.NatGeoWorldMap"),
-            overlayGroups = c("Ecoregions"),
-            options = layersControlOptions(collapsed = TRUE)) %>%
+            overlayGroups = c("Ecozones","Ecoregions"),
+            options = layersControlOptions(collapsed = FALSE)) %>%
+            hideGroup(c("Ecozones")) %>%
             addLegend(pal = pal, values = ~i, opacity = 0.7, title = "R-squared",
                 position = "bottomright")
     })

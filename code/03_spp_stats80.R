@@ -1,6 +1,5 @@
 # Calculate stats for each species in each ecoregion
-# Pierre Vernier
-# 2019-08-21
+# PV 2019-08-21
 
 library(raster)
 library(tidyverse)
