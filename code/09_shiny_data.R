@@ -15,12 +15,14 @@ ks = read_csv("output/tables/species_surrogates_ks.csv")
 save(ks, file = "shiny/ks.Rdata")
 
 # KS table (rep and nonrep networks)
-ks_repnorep = read_csv("output/tables/species_surrogates_ks_repnorep.csv")
-save(ks_repnorep, file = "shiny/ks_repnorep.Rdata")
+ks = read_csv("output/tables/species_surrogates_ks_rnr.csv")
+nets = read_csv("code/input/ecoregion_statistics.csv") %>% select(ecoregion, intactness)
+ks = left_join(ks, nets)
+save(ks, file = "shiny/ks.Rdata")
 
 # KS table (mix of random sample and all rep and nonrep networks)
-x1 = mutate(ks, sumgap90=NULL, rep=0.5)
-x2 = ks_repnorep
-x1 = filter(x1, !network %in% x2$network)
-ks_mix = bind_rows(x2,x1)
-save(ks_mix, file = "shiny/ks_mix.Rdata")
+#x1 = mutate(ks, sumgap90=NULL, rep=0.5)
+#x2 = ks
+#x1 = filter(x1, !network %in% x2$network)
+#ks_mix = bind_rows(x2,x1)
+#save(ks_mix, file = "shiny/ks_mix.Rdata")

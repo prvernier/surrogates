@@ -1,22 +1,24 @@
 # Model network-level relationship between species KS and CMI + GPP + LED + LCC
-# Pierre Vernier
-# 2019-09-11
+# PV 2019-10-21
 
 library(tidyverse)
 library(caret)
 
+set.seed(20191021)
 songbirds = c('blbw','boch','brcr','btnw','cawa','cmwa','osfl','pigr','rubl','swth','wwcr')
-spp_to_use = c('allbirds','forestbirds','allwaterfowl','cavitynesters','groundnesters','overwaternesters',songbirds)
+spp_to_use = c('caribou','allbirds','forestbirds','allwaterfowl','cavitynesters','groundnesters','overwaternesters',songbirds)
 #x = read_csv("../output/ecozones/ecozones_networks_spp_1000.csv")
 x = read_csv("output/tables/species_surrogates_ks_rnr.csv")
-zone = select(x, ecozone, ecoregion, intact_eco) %>% unique()
-stats = read_csv("code/input/species_stats11.csv")
-rnd = 1000
+#zone = select(x, ecozone, ecoregion, intact_eco) %>% unique()
+zone = select(x, ecozone, ecoregion) %>% unique()
+netstats = read_csv('code/input/ecoregion_statistics.csv')
+ecoList = sort(netstats$ecoregion)
+stats = read_csv("code/input/species_stats11.csv") %>% filter(ecoregion %in% ecoList)
 
 # Create new tibble
 z = tibble(ecozone=as.character(),
             ecoregion=as.character(),
-            intactness=as.numeric(),
+            #intactness=as.numeric(),
             #networks=as.integer(), 
             nets_rep=as.integer(),
             nets_nonrep=as.integer(),
@@ -50,10 +52,10 @@ for (species in spp_to_use) {
         xx = filter(x, ecoregion==eco & (rep==0 | rep==1))
         nr = sum(xx$rep) # number of rep networks
         nnr = nrow(xx) - nr # number of non-rep networks
-        if (nnr > 10*nr) {
-            xx = group_by(xx, rep) %>% sample_n(if_else(rep==1,nr,10*nr)) %>% ungroup()
-        } else if (nr > 10*nnr) {
-            xx = group_by(xx, rep) %>% sample_n(if_else(rep==1,10*nnr,nnr)) %>% ungroup()
+        if (nnr >= nr) {
+            xx = group_by(xx, rep) %>% sample_n(if_else(rep==1,nr,nr)) %>% ungroup()
+        } else if (nr > nnr) {
+            xx = group_by(xx, rep) %>% sample_n(if_else(rep==1,nnr,nnr)) %>% ungroup()
         }
 
         if (sum(!is.na(xx[species])) > 2) {
@@ -66,7 +68,7 @@ for (species in spp_to_use) {
 
             z[i,"ecozone"] = substr(zone$ecozone[zone$ecoregion==eco],2,nchar(zone$ecozone[zone$ecoregion==eco]))
             z[i,"ecoregion"] = eco
-            z[i,"intactness"] = zone$intact_eco[zone$ecoregion==eco]
+            #z[i,"intactness"] = zone$intact_eco[zone$ecoregion==eco]
             rnet1 = length(xx$rep[xx$rep==1])
             rnet0 = length(xx$rep[xx$rep==0])
             #z[i,"networks"] = paste0("rep=",rnet1,", nrep=",rnet0)
@@ -78,13 +80,13 @@ for (species in spp_to_use) {
                 z[i,"density_cv"] = stats$std_dev[stats$ecoregion==eco & stats$species==species]
             }
             z[i,"cmi_coef"] = sprintf("%.3f",summary(m1)$coefficients[,1]["ks_cmi"])
-            z[i,"cmi_tstat"] = sprintf("%.2f",vi[1,1])
+            z[i,"cmi_tstat"] = sprintf("%.2f",vi["ks_cmi",1])
             z[i,"gpp_coef"] = sprintf("%.3f",summary(m1)$coefficients[,1]["ks_gpp"])
-            z[i,"gpp_tstat"] = sprintf("%.2f",vi[2,1])
+            z[i,"gpp_tstat"] = sprintf("%.2f",vi["ks_gpp",1])
             z[i,"led_coef"] = sprintf("%.3f",summary(m1)$coefficients[,1]["ks_led"])
-            z[i,"led_tstat"] = sprintf("%.2f",vi[3,1])
+            z[i,"led_tstat"] = sprintf("%.2f",vi["ks_led",1])
             z[i,"lcc_coef"] = sprintf("%.3f",summary(m1)$coefficients[,1]["bc_lcc"])
-            z[i,"lcc_tstat"] = sprintf("%.2f",vi[4,1])
+            z[i,"lcc_tstat"] = sprintf("%.2f",vi["bc_lcc",1])
             z[i,"r2"] = sprintf("%.3f",summary(m1)$r.squared)
             z[i,"rmse"] = sprintf("%.3f",modelr::rmse(m1,xxx))
 

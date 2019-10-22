@@ -1,6 +1,6 @@
 # Create tables and figures for results section of manuscript
 # Pierre Vernier
-# 2019-09-11
+# 2019-09-21
 
 library(tidyverse)
 
@@ -36,14 +36,21 @@ x1 = group_by(z, species) %>% summarize(
         species=="rubl" ~ 15,
         species=="swth" ~ 16,
         species=="wwcr" ~ 17,
+        species=="caribou" ~ 18,
         TRUE ~ 0)) %>%
      arrange(rank) %>% mutate(rank=NULL)
 write_csv(x1, paste0('output/tables/models_range_of_values_rnr.csv'))
 
 
+# Summarize R2 by species x ecoregion
+x2 = dplyr::select(z, ecozone, ecoregion, species, r2) %>% spread(species, r2) %>% arrange(ecoregion) %>%
+    select(ecozone, ecoregion, caribou, blbw, boch, brcr, btnw, cawa, cmwa, osfl, pigr, rubl, swth, wwcr, allbirds, forestbirds, allwaterfowl, cavitynesters, groundnesters, overwaternesters)
+write_csv(x2, paste0('output/tables/models_r2_by_ecoregion_rnr.csv'))
+
+
 # Summarize R2 and RMSE by species x ecoregion
-x2a = dplyr::select(z, ecoregion, species, r2) %>% spread(ecoregion, r2) %>% mutate(metric="R2", id=as.integer(seq(1,34,2)))
-x2b = dplyr::select(z, ecoregion, species, rmse) %>% spread(ecoregion, rmse) %>% mutate(metric="RMSE", id=as.integer(seq(2,35,2)))
+x2a = dplyr::select(z, ecoregion, species, r2) %>% spread(ecoregion, r2) %>% mutate(metric="R2", id=as.integer(seq(1,36,2)))
+x2b = dplyr::select(z, ecoregion, species, rmse) %>% spread(ecoregion, rmse) %>% mutate(metric="RMSE", id=as.integer(seq(2,37,2)))
 x2 = bind_rows(x2a, x2b) %>% arrange(id)
 names(x2) = c('Species', 'Metric', paste0("Ecor",unique(z$ecoregion)),"id")
 x2 = mutate(x2, id=NULL)
@@ -51,10 +58,10 @@ write_csv(x2, paste0('output/tables/models_r2rmse_by_ecoregion_rnr.csv'))
 
 
 # Summarize variable importance by species x ecoregion
-x2a = dplyr::select(z, ecoregion, species, cmi_tstat) %>% spread(ecoregion, cmi_tstat) %>% mutate(surrogate="CMI", id=as.integer(seq(1,68,4)))
-x2b = dplyr::select(z, ecoregion, species, gpp_tstat) %>% spread(ecoregion, gpp_tstat) %>% mutate(surrogate="GPP", id=as.integer(seq(2,69,4)))
-x2c = dplyr::select(z, ecoregion, species, led_tstat) %>% spread(ecoregion, led_tstat) %>% mutate(surrogate="LED", id=as.integer(seq(3,70,4)))
-x2d = dplyr::select(z, ecoregion, species, lcc_tstat) %>% spread(ecoregion, lcc_tstat) %>% mutate(surrogate="LCC", id=as.integer(seq(4,71,4)))
+x2a = dplyr::select(z, ecoregion, species, cmi_tstat) %>% spread(ecoregion, cmi_tstat) %>% mutate(surrogate="CMI", id=as.integer(seq(1,72,4)))
+x2b = dplyr::select(z, ecoregion, species, gpp_tstat) %>% spread(ecoregion, gpp_tstat) %>% mutate(surrogate="GPP", id=as.integer(seq(2,73,4)))
+x2c = dplyr::select(z, ecoregion, species, led_tstat) %>% spread(ecoregion, led_tstat) %>% mutate(surrogate="LED", id=as.integer(seq(3,74,4)))
+x2d = dplyr::select(z, ecoregion, species, lcc_tstat) %>% spread(ecoregion, lcc_tstat) %>% mutate(surrogate="LCC", id=as.integer(seq(4,75,4)))
 x2 = bind_rows(x2a, x2b, x2c, x2d) %>% arrange(id)
 names(x2) = c('Species', 'Metric', paste0("Ecor",unique(z$ecoregion)),"id")
 x2 = mutate(x2, id=NULL)
@@ -63,8 +70,13 @@ write_csv(x2, paste0('output/tables/surrogate_importance_rnr.csv'))
 
 # Summarize variable importance - second try
 x3 = select(z, ecoregion, species, cmi_tstat, gpp_tstat, led_tstat, lcc_tstat) %>%
-    mutate(cmi=as.integer(0),gpp=as.integer(0),led=as.integer(0),lcc=as.integer(0))
+    mutate(cmi=as.integer(0),gpp=as.integer(0),led=as.integer(0),lcc=as.integer(0)) %>%
+    mutate(cmi_tstat=if_else(is.na(cmi_tstat),0,cmi_tstat)) %>%
+    mutate(gpp_tstat=if_else(is.na(gpp_tstat),0,gpp_tstat)) %>%
+    mutate(led_tstat=if_else(is.na(led_tstat),0,led_tstat)) %>%
+    mutate(lcc_tstat=if_else(is.na(lcc_tstat),0,lcc_tstat))
 for (i in 1:nrow(x3)) {
+    print(i)
     if (max(x3[i,"cmi_tstat"],x3[i,"gpp_tstat"],x3[i,"led_tstat"],x3[i,"lcc_tstat"])==x3[i,"cmi_tstat"]) {
         x3[i,"cmi"]=1
     } else if (max(x3[i,"cmi_tstat"],x3[i,"gpp_tstat"],x3[i,"led_tstat"],x3[i,"lcc_tstat"])==x3[i,"gpp_tstat"]) {

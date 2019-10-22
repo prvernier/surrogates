@@ -7,10 +7,10 @@ library(tidyverse)
 load("stats.Rdata")
 load("ecor_maps.Rdata")
 load("ecoz_maps.Rdata")
-load("ks_mix.Rdata")
+load("ks.Rdata")
 
-ks = mutate(ks_mix, ecozone=as.character(substr(ecozone,2,nchar(ecozone))))
-zone = select(ks, ecozone, ecoregion, intact_eco) %>% unique()
+ks = mutate(ks, ecozone=as.character(substr(ecozone,2,nchar(ecozone))))
+zone = select(ks, ecozone, ecoregion, intactness) %>% unique()
 songbirds = c('BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR')
 
 ui = fluidPage(
@@ -24,8 +24,8 @@ ui = fluidPage(
 				label = "Select species:",
 				choices = c('ALLBIRDS','FORESTBIRDS',songbirds,'ALLWATERFOWL','CAVITYNESTERS','GROUNDNESTERS','OVERWATERNESTERS'),
 				selected = "CAWA"),
-            hr(),
-            checkboxInput("repnorep", "Use only rep and nonrep networks", TRUE),
+           # hr(),
+            #checkboxInput("repnorep", "Use only rep and nonrep networks", TRUE),
             checkboxInput("ave", "Show averages at bottom of table", FALSE),
             hr(),           
             downloadButton('downloadData',"Download data")
@@ -44,10 +44,10 @@ ui = fluidPage(
                 br(),
                 plotOutput("plot1")
                 ),
-            tabPanel("Intactness vs R-squared",
-                br(),
-                plotOutput("plot2")
-                ),
+            #tabPanel("Intactness vs R-squared",
+            #    br(),
+            #    plotOutput("plot2")
+            #    ),
             tabPanel("Ecozone boxplots",
                 br(),
                 plotOutput("plot3")
@@ -92,19 +92,13 @@ server = function(input, output) {
 
         # run models for each ecoregion
         for (eco in eco_list) {
-            if (input$repnorep==TRUE) {
-                x = filter(ks, ecoregion==eco & (rep==0 | rep==1))
-                nr = sum(x$rep) # number of rep networks
-                nnr = nrow(x) - nr # number of non-rep networks
-                if (nnr > 10*nr) {
-                    x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,10*nr)) %>% ungroup()
-                } else if (nr > 10*nnr) {
-                    x = group_by(x, rep) %>% sample_n(if_else(rep==1,10*nnr,nnr)) %>% ungroup()
-                }
-            } else {
-                x = filter(ks, ecoregion==eco)
-                minNet = min(table(x$rep))
-                x = group_by(x, rep) %>% sample_n(minNet) %>% ungroup()
+            x = filter(ks, ecoregion==eco) # & (rep==0 | rep==1))
+            nr = sum(x$rep) # number of rep networks
+            nnr = nrow(x) - nr # number of non-rep networks
+            if (nnr >= nr) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,nr)) %>% ungroup()
+            } else if (nr > nnr) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nnr,nnr)) %>% ungroup()
             }
             if (sum(!is.na(x[spp])) > 2) {
                 
@@ -120,43 +114,36 @@ server = function(input, output) {
                 # generate summary table
                 z[i,"Ecozone"] = zone$ecozone[zone$ecoregion==eco]
                 z[i,"Ecoregion"] = eco
-                z[i,"Intactness"] = zone$intact_eco[zone$ecoregion==eco]
-                rnet1 = length(x$rep[x$rep==1])
-                rnet0.5 = length(x$rep[x$rep==0.5])
-                rnet0 = length(x$rep[x$rep==0])
-                if (input$repnorep==FALSE) {
-                    z[i,"Networks"] = paste0("rep=",rnet1,", mix=",rnet0.5,", nrep=",rnet0)
-                } else {
-                    z[i,"Networks"] = paste0("rep=",rnet1,", nrep=",rnet0)
-                }
-                z[i,"CMI"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["ks_cmi"])," (",sprintf("%.2f",vi[1,1]),")")
-                z[i,"GPP"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["ks_gpp"])," (",sprintf("%.2f",vi[2,1]),")")
-                z[i,"LED"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["ks_led"])," (",sprintf("%.2f",vi[3,1]),")")
-                z[i,"LCC"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["bc_lcc"])," (",sprintf("%.2f",vi[4,1]),")")
+                z[i,"Intactness"] = zone$intactness[zone$ecoregion==eco]
+                z[i,"Networks"] = nrow(x) 
+                z[i,"CMI"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["ks_cmi"])," (",sprintf("%.2f",vi["ks_cmi",1]),")")
+                z[i,"GPP"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["ks_gpp"])," (",sprintf("%.2f",vi["ks_gpp",1]),")")
+                z[i,"LED"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["ks_led"])," (",sprintf("%.2f",vi["ks_led",1]),")")
+                z[i,"LCC"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["bc_lcc"])," (",sprintf("%.2f",vi["bc_lcc",1]),")")
                 z[i,"R2"] = sprintf("%.3f",summary(m1)$r.squared)
                 z[i,"RMSE"] = sprintf("%.3f",modelr::rmse(m1,x))
                 # calculate average values
                 if (input$ave==TRUE) {
                     if (i==1) {
                         sum_cmi = summary(m1)$coefficients[,1]["ks_cmi"]
-                        sum_cmi_vi = vi[1,1]
+                        sum_cmi_vi = vi["ks_cmi",1]
                         sum_gpp = summary(m1)$coefficients[,1]["ks_gpp"]
-                        sum_gpp_vi = vi[2,1]
+                        sum_gpp_vi = vi["ks_gpp",1]
                         sum_led = summary(m1)$coefficients[,1]["ks_led"]
-                        sum_led_vi = vi[3,1]
+                        sum_led_vi = vi["ks_led",1]
                         sum_lcc = summary(m1)$coefficients[,1]["bc_lcc"]
-                        sum_lcc_vi = vi[4,1]
+                        sum_lcc_vi = vi["bc_lcc",1]
                         sum_r2 = summary(m1)$r.squared
                         sum_rmse = modelr::rmse(m1,x)
                     } else {
                         sum_cmi = sum_cmi + summary(m1)$coefficients[,1]["ks_cmi"]
-                        sum_cmi_vi = sum_cmi_vi + vi[1,1]
+                        sum_cmi_vi = sum_cmi_vi + vi["ks_cmi",1]
                         sum_gpp = sum_gpp + summary(m1)$coefficients[,1]["ks_gpp"]
-                        sum_gpp_vi = sum_gpp_vi + vi[2,1]
+                        sum_gpp_vi = sum_gpp_vi + vi["ks_gpp",1]
                         sum_led = sum_led + summary(m1)$coefficients[,1]["ks_led"]
-                        sum_led_vi = sum_led_vi + vi[3,1]
+                        sum_led_vi = sum_led_vi + vi["ks_led",1]
                         sum_lcc = sum_lcc + summary(m1)$coefficients[,1]["bc_lcc"]
-                        sum_lcc_vi = sum_lcc_vi + vi[4,1]
+                        sum_lcc_vi = sum_lcc_vi + vi["bc_lcc",1]
                         sum_r2 = sum_r2 + summary(m1)$r.squared
                         sum_rmse = sum_rmse + modelr::rmse(m1,x)
                     }
@@ -169,10 +156,10 @@ server = function(input, output) {
             z[i,"Ecoregion"] = ""
             z[i,"Networks"] = ""
             z[i,"Intactness"] = ""
-            z[i,"CMI"] = paste0(sprintf("%.3f",sum_cmi/(i-1))," (",sprintf("%.2f",sum_cmi_vi/(i-1)),")")
-            z[i,"GPP"] = paste0(sprintf("%.3f",sum_gpp/(i-1))," (",sprintf("%.2f",sum_gpp_vi/(i-1)),")")
-            z[i,"LED"] = paste0(sprintf("%.3f",sum_led/(i-1))," (",sprintf("%.2f",sum_led_vi/(i-1)),")")
-            z[i,"LCC"] = paste0(sprintf("%.3f",sum_lcc/(i-1))," (",sprintf("%.2f",sum_lcc_vi/(i-1)),")")
+            z[i,"CMI"] = "" # paste0(sprintf("%.3f",sum_cmi/(i-1))," (",sprintf("%.2f",sum_cmi_vi/(i-1)),")")
+            z[i,"GPP"] = "" # paste0(sprintf("%.3f",sum_gpp/(i-1))," (",sprintf("%.2f",sum_gpp_vi/(i-1)),")")
+            z[i,"LED"] = "" # paste0(sprintf("%.3f",sum_led/(i-1))," (",sprintf("%.2f",sum_led_vi/(i-1)),")")
+            z[i,"LCC"] = "" # paste0(sprintf("%.3f",sum_lcc/(i-1))," (",sprintf("%.2f",sum_lcc_vi/(i-1)),")")
             z[i,"R2"] = sprintf("%.3f",sum_r2/(i-1))
             z[i,"RMSE"] = sprintf("%.3f",sum_rmse/(i-1))
         }
@@ -197,13 +184,24 @@ server = function(input, output) {
         }
         i = 1
         for (eco in eco_list) {
-            if (input$repnorep==TRUE) {
-                x = filter(ks, ecoregion==eco & (rep==0 | rep==1))
-           } else {
-                x = filter(ks, ecoregion==eco)
-                minNet = min(table(x$rep))
-                x = group_by(x, rep) %>% sample_n(minNet) %>% ungroup()
+            #if (input$repnorep==TRUE) {
+                x = filter(ks, ecoregion==eco) #& (rep==0 | rep==1))
+            #} else {
+            #     x = filter(ks, ecoregion==eco)
+            #     minNet = min(table(x$rep))
+            #     x = group_by(x, rep) %>% sample_n(minNet) %>% ungroup()
+            #}
+
+
+            nr = sum(x$rep) # number of rep networks
+            nnr = nrow(x) - nr # number of non-rep networks
+            if (nnr >= nr) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,nr)) %>% ungroup()
+            } else if (nr > nnr) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nnr,nnr)) %>% ungroup()
             }
+
+
             if (sum(!is.na(x[spp])) > 2) {
                 x = filter(x, !is.na(x[[spp]]))
                 m1 = lm(test ~ ks_cmi + ks_gpp + ks_led + bc_lcc, data=x)

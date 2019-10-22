@@ -1,5 +1,5 @@
 # Calculate KS for test species in rep and nonrep networks
-# PV 2019-10-17
+# PV 2019-10-21
 
 library(sf)
 library(velox)
@@ -8,16 +8,13 @@ library(tidyverse)
 
 #memory.limit(320000)
 prj = "+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
-set.seed = 6049489181
-rnd = 1000
 dropDir = 'C:/Users/PIVER37/Dropbox (BEACONs)/'
-net_stats = read_csv("code/input/net_summary_stats.csv")
-birds = c('blbw','boch','brcr','btnw','cawa','cmwa','osfl','pigr','rubl','swth','wwcr') # pba_nwb
-sppList = c('Caribou','AllBirds','ForestBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters',birds) #pba_nwb_birds)
+birds = c('blbw','boch','brcr','btnw','cawa','cmwa','osfl','pigr','rubl','swth','wwcr')
+sppList = c('Caribou','AllBirds','ForestBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters',birds)
 ecoList = read_csv('code/input/pan_eco_mdr_v4.csv') %>% pull(ecoregion) %>% sort()
-x = read_csv('C:/Users/PIVER37/Dropbox (BEACONs)/BEACONs Share/surrogates/data/networks/revised_networks_sept2019/network_summary.csv')
-ecoList = sort(x$ecoregion[x$use_in_analysis==1])
 fda_shp = read_sf('data/vector/pan_ecoregions_fda_v3.shp') %>% st_transform(crs=prj)
+netstats = read_csv('code/input/ecoregion_statistics.csv')
+ecoList = sort(netstats$ecoregion)
 
 for (eco in ecoList) {
     cat("Ecoregion",eco,"...\n")
@@ -36,7 +33,6 @@ for (eco in ecoList) {
 
         nets_rep = read_sf(v_nets_rep) %>% st_transform(crs=prj) #%>% filter(top10km==1)
         nets_nonrep = read_sf(v_nets_nonrep) %>% st_transform(crs=prj) #%>% filter(top10km==1)
-        #if (nrow(nets)>1000) nets = sample_n(nets, rnd)
         x_rep = nets_rep %>% st_set_geometry(NULL)
         x_nonrep = nets_nonrep %>% st_set_geometry(NULL)
 
@@ -99,7 +95,9 @@ for (eco in ecoList) {
                 }
             }   
         }
-
+        
+        x_rep = mutate(x_rep, rep=1)
+        x_nonrep = mutate(x_nonrep, rep=0)
         x = bind_rows(x_rep, x_nonrep)
         write_csv(x, paste0("output/ecoregions_repnorep/eco_",eco,"_nets_spp_ks.csv"))
     }
