@@ -16,7 +16,7 @@ save(ks, file = "shiny/ks.Rdata")
 
 # KS table (rep and nonrep networks)
 ks = read_csv("output/tables/species_surrogates_ks_rnr.csv")
-nets = read_csv("code/input/ecoregion_statistics.csv") %>% select(ecoregion, intactness)
+nets = read_csv("code/input/ecoregion_statistics.csv") %>% dplyr::select(ecoregion, intactness)
 ks = left_join(ks, nets)
 save(ks, file = "shiny/ks.Rdata")
 

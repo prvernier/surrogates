@@ -1,6 +1,6 @@
 # Create tables and figures for results section of manuscript
 # Pierre Vernier
-# 2019-09-21
+# 2019-09-22
 
 library(tidyverse)
 
@@ -44,7 +44,7 @@ write_csv(x1, paste0('output/tables/models_range_of_values_rnr.csv'))
 
 # Summarize R2 by species x ecoregion
 x2 = dplyr::select(z, ecozone, ecoregion, species, r2) %>% spread(species, r2) %>% arrange(ecoregion) %>%
-    select(ecozone, ecoregion, caribou, blbw, boch, brcr, btnw, cawa, cmwa, osfl, pigr, rubl, swth, wwcr, allbirds, forestbirds, allwaterfowl, cavitynesters, groundnesters, overwaternesters)
+    dplyr::select(ecozone, ecoregion, caribou, blbw, boch, brcr, btnw, cawa, cmwa, osfl, pigr, rubl, swth, wwcr, allbirds, forestbirds, allwaterfowl, cavitynesters, groundnesters, overwaternesters)
 write_csv(x2, paste0('output/tables/models_r2_by_ecoregion_rnr.csv'))
 
 
@@ -69,7 +69,7 @@ write_csv(x2, paste0('output/tables/surrogate_importance_rnr.csv'))
 
 
 # Summarize variable importance - second try
-x3 = select(z, ecoregion, species, cmi_tstat, gpp_tstat, led_tstat, lcc_tstat) %>%
+x3 = dplyr::select(z, ecoregion, species, cmi_tstat, gpp_tstat, led_tstat, lcc_tstat) %>%
     mutate(cmi=as.integer(0),gpp=as.integer(0),led=as.integer(0),lcc=as.integer(0)) %>%
     mutate(cmi_tstat=if_else(is.na(cmi_tstat),0,cmi_tstat)) %>%
     mutate(gpp_tstat=if_else(is.na(gpp_tstat),0,gpp_tstat)) %>%
@@ -128,6 +128,6 @@ zz = mutate(z,
     LCC = paste0(lcc_coef," (", lcc_tstat, ")"),
     R2 = r2,
     RMSE = rmse) %>%
-    select(Species, Ecoregion, Networks, CMI, GPP, LED, LCC, R2, RMSE)
+    dplyr::select(Species, Ecoregion, Networks, CMI, GPP, LED, LCC, R2, RMSE)
 write_csv(zz, 'output/tables/table_s1.csv')
 

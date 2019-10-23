@@ -1,5 +1,5 @@
 # Model network-level relationship between species KS and CMI + GPP + LED + LCC
-# PV 2019-10-21
+# PV 2019-10-22
 
 library(tidyverse)
 library(caret)
@@ -9,8 +9,8 @@ songbirds = c('blbw','boch','brcr','btnw','cawa','cmwa','osfl','pigr','rubl','sw
 spp_to_use = c('caribou','allbirds','forestbirds','allwaterfowl','cavitynesters','groundnesters','overwaternesters',songbirds)
 #x = read_csv("../output/ecozones/ecozones_networks_spp_1000.csv")
 x = read_csv("output/tables/species_surrogates_ks_rnr.csv")
-#zone = select(x, ecozone, ecoregion, intact_eco) %>% unique()
-zone = select(x, ecozone, ecoregion) %>% unique()
+#zone = select(x, ecozone, ecoregion, intactness) %>% unique()
+zone = dplyr::select(x, ecozone, ecoregion) %>% unique()
 netstats = read_csv('code/input/ecoregion_statistics.csv')
 ecoList = sort(netstats$ecoregion)
 stats = read_csv("code/input/species_stats11.csv") %>% filter(ecoregion %in% ecoList)

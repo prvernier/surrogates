@@ -1,5 +1,5 @@
 # Prepare rep and nonrep shapefiles prior to calculating KS statistics
-# PV 2019-10-21
+# PV 2019-10-22
 
 library(sf)
 library(tidyverse)
@@ -78,17 +78,17 @@ for (eco in eco_list) {
 
     # Write new shapefile and update ecoregion_statistics.csv file
     if (r_zero==1 & nr_zero==1) {
-        ecostats$nets_rep[x$ecoregion==eco] = 0
-        ecostats$nets_nonrep[x$ecoregion==eco] = 0
+        ecostats$nets_rep[ecostats$ecoregion==eco] = 0
+        ecostats$nets_nonrep[ecostats$ecoregion==eco] = 0
     } else if (r_zero==0 & nr_zero==0) {
         write_sf(r, paste0(new_dir,"eco_",eco,"_networks_rep.shp"))
         write_sf(nr, paste0(new_dir,"eco_",eco,"_networks_nonrep.shp"))
-        ecostats$nets_rep[x$ecoregion==eco] = nrow(r)
-        ecostats$nets_nonrep[x$ecoregion==eco] = nrow(nr)
+        ecostats$nets_rep[ecostats$ecoregion==eco] = nrow(r)
+        ecostats$nets_nonrep[ecostats$ecoregion==eco] = nrow(nr)
     } else {
         print("...not sure what happened!")
     }
 }
 
-ecostats = mutate(networks = if_else(nets_rep < nets_nonrep, nets_rep, nets_nonrep)
+ecostats = mutate(ecostats, networks = if_else(nets_rep < nets_nonrep, nets_rep, nets_nonrep))
 write_csv(ecostats, 'code/input/ecoregion_statistics.csv')

@@ -1,5 +1,5 @@
 # Calculate KS for test species in rep and nonrep networks
-# PV 2019-10-21
+# PV 2019-10-22
 
 library(sf)
 library(velox)
