@@ -1,5 +1,5 @@
 # Prepare rep and nonrep shapefiles prior to calculating KS statistics
-# PV 2019-10-22
+# PV 2019-10-24
 
 library(sf)
 library(tidyverse)
@@ -45,7 +45,7 @@ for (eco in eco_list) {
             mutate(network=netName, ks_cmi=ks_net_cmi, ks_gpp=ks_net_gpp, ks_led=ks_net_led, bc_lcc=bc_net_lcc) %>%
             select(network, ks_cmi, ks_gpp, ks_led, bc_lcc)
     } else if (file.exists(paste0(old_dir,"eco_",eco,"_networks_rep.shp"))) {
-        r = read_sf(paste0(old_dir,"eco_",eco,"_networks_rep.shp")) %>%
+        r = read_sf(paste0(old_dir,"eco_",eco,"_networks_rep.shp")) %>% filter(top10km==1) %>%
             select(network, ks_cmi, ks_gpp, ks_led, bc_lcc)
     } else {
         print("...rep networks missing!")
@@ -69,7 +69,7 @@ for (eco in eco_list) {
             mutate(network=netName, ks_cmi=ks_net_cmi, ks_gpp=ks_net_gpp, ks_led=ks_net_led, bc_lcc=bc_net_lcc) %>%
             select(network, ks_cmi, ks_gpp, ks_led, bc_lcc)
     } else if (file.exists(paste0(old_dir,"eco_",eco,"_networks_nonrep.shp"))) {
-        nr = read_sf(paste0(old_dir,"eco_",eco,"_networks_nonrep.shp")) %>%
+        nr = read_sf(paste0(old_dir,"eco_",eco,"_networks_nonrep.shp")) %>% filter(top10km==1) %>%
             select(network, ks_cmi, ks_gpp, ks_led, bc_lcc)
     } else {
         print("...nonrep networks missing!")
@@ -90,5 +90,5 @@ for (eco in eco_list) {
     }
 }
 
-ecostats = mutate(ecostats, networks = if_else(nets_rep < nets_nonrep, nets_rep, nets_nonrep))
+ecostats = mutate(ecostats, networks = if_else(nets_rep < nets_nonrep, nets_rep*2, nets_nonrep*2))
 write_csv(ecostats, 'code/input/ecoregion_statistics.csv')

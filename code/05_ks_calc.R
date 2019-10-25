@@ -1,5 +1,5 @@
 # Calculate KS for test species in rep and nonrep networks
-# PV 2019-10-22
+# PV 2019-10-24
 
 library(sf)
 library(velox)
@@ -31,8 +31,8 @@ for (eco in ecoList) {
         v_eco = read_sf("data/vector/pan_eco_mdr_v4.shp") %>% st_transform(crs=prj) %>% filter(Ecoreg==eco)
         v_fda = read_sf("data/vector/pan_ecoregions_fda_v3.shp") %>% st_transform(crs=prj) %>% filter(Ecoregion==eco)
 
-        nets_rep = read_sf(v_nets_rep) %>% st_transform(crs=prj) #%>% filter(top10km==1)
-        nets_nonrep = read_sf(v_nets_nonrep) %>% st_transform(crs=prj) #%>% filter(top10km==1)
+        nets_rep = read_sf(v_nets_rep) %>% st_transform(crs=prj)
+        nets_nonrep = read_sf(v_nets_nonrep) %>% st_transform(crs=prj)
         x_rep = nets_rep %>% st_set_geometry(NULL)
         x_nonrep = nets_nonrep %>% st_set_geometry(NULL)
 

@@ -1,4 +1,5 @@
 library(sf)
+library(DT)
 library(caret)
 library(shiny)
 library(leaflet)
@@ -22,7 +23,7 @@ ui = fluidPage(
         sidebarPanel(width=3,
             selectInput(inputId = "species",
 				label = "Select species:",
-				choices = c('ALLBIRDS','FORESTBIRDS',songbirds,'ALLWATERFOWL','CAVITYNESTERS','GROUNDNESTERS','OVERWATERNESTERS'),
+				choices = c("CARIBOU",songbirds,'ALLBIRDS','FORESTBIRDS','ALLWATERFOWL','CAVITYNESTERS','GROUNDNESTERS','OVERWATERNESTERS'),
 				selected = "CAWA"),
            # hr(),
             #checkboxInput("repnorep", "Use only rep and nonrep networks", TRUE),
@@ -34,7 +35,7 @@ ui = fluidPage(
     mainPanel(
 		tabsetPanel(
             tabPanel("Regression analysis",
-                tableOutput("tab1")
+                dataTableOutput("tab1")
                 ),
             tabPanel("Map output",
                 br(),
@@ -44,10 +45,10 @@ ui = fluidPage(
                 br(),
                 plotOutput("plot1")
                 ),
-            #tabPanel("Intactness vs R-squared",
-            #    br(),
-            #    plotOutput("plot2")
-            #    ),
+            tabPanel("Intactness effect",
+                br(),
+                plotOutput("plot2")
+                ),
             tabPanel("Ecozone boxplots",
                 br(),
                 plotOutput("plot3")
@@ -86,6 +87,8 @@ server = function(input, output) {
         # individual species or groups of species
         if (input$species %in% songbirds) {
             eco_list = stats$zone[stats$species==spp & stats$pct>0]
+        } else if (input$species=="CARIBOU") {
+            eco_list = c(51,52,53,55,59,60,62,68,69,70,71,72,74,77,78,80,87,88,89,90,94,95,100,103,104,105,136,215,216,217)
         } else {
             eco_list = unique(ks$ecoregion)
         }
@@ -95,7 +98,9 @@ server = function(input, output) {
             x = filter(ks, ecoregion==eco) # & (rep==0 | rep==1))
             nr = sum(x$rep) # number of rep networks
             nnr = nrow(x) - nr # number of non-rep networks
-            if (nnr >= nr) {
+            if (nr > 500 & nnr > 500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,500,500)) %>% ungroup()
+            } else if (nnr >= nr) {
                 x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,nr)) %>% ungroup()
             } else if (nr > nnr) {
                 x = group_by(x, rep) %>% sample_n(if_else(rep==1,nnr,nnr)) %>% ungroup()
@@ -166,8 +171,9 @@ server = function(input, output) {
         return(z)
    })
 
-    output$tab1 <- renderTable({
+    output$tab1 <- renderDataTable({
         z = testdata()
+        datatable(z, rownames=F, options=list(dom = 'tip', scrollX = TRUE, pageLength = 48), class="compact")
     })
 
 

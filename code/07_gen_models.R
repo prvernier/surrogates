@@ -1,5 +1,5 @@
 # Model network-level relationship between species KS and CMI + GPP + LED + LCC
-# PV 2019-10-22
+# PV 2019-10-24
 
 library(tidyverse)
 library(caret)
@@ -43,6 +43,8 @@ for (species in spp_to_use) {
     # individual species or groups of species
     if (species %in% songbirds) {
         eco_list = stats$ecoregion[stats$species==species & stats$pct_range>0]
+    } else if (species=="caribou") {
+        eco_list = c(51,52,53,55,59,60,62,68,69,70,71,72,74,77,78,80,87,88,89,90,94,95,100,103,104,105,136,215,216,217)
     } else {
         eco_list = unique(x$ecoregion)
     }
@@ -52,7 +54,9 @@ for (species in spp_to_use) {
         xx = filter(x, ecoregion==eco & (rep==0 | rep==1))
         nr = sum(xx$rep) # number of rep networks
         nnr = nrow(xx) - nr # number of non-rep networks
-        if (nnr >= nr) {
+        if (nr > 500 & nnr > 500) {
+            xx = group_by(xx, rep) %>% sample_n(if_else(rep==1,500,500)) %>% ungroup()
+        } else if (nnr >= nr) {
             xx = group_by(xx, rep) %>% sample_n(if_else(rep==1,nr,nr)) %>% ungroup()
         } else if (nr > nnr) {
             xx = group_by(xx, rep) %>% sample_n(if_else(rep==1,nnr,nnr)) %>% ungroup()

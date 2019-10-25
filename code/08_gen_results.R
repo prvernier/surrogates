@@ -1,6 +1,5 @@
 # Create tables and figures for results section of manuscript
-# Pierre Vernier
-# 2019-09-22
+# PV 2019-09-24
 
 library(tidyverse)
 
