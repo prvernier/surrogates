@@ -46,34 +46,38 @@ x2 = dplyr::select(z, ecozone, ecoregion, species, r2) %>% spread(species, r2) %
     dplyr::select(ecozone, ecoregion, caribou, blbw, boch, brcr, btnw, cawa, cmwa, osfl, pigr, rubl, swth, wwcr, allbirds, forestbirds, allwaterfowl, cavitynesters, groundnesters, overwaternesters)
 write_csv(x2, paste0('output/tables/models_r2_by_ecoregion_rnr.csv'))
 
+# Summarize RMSE by species x ecoregion
+x2 = dplyr::select(z, ecozone, ecoregion, species, rmse) %>% spread(species, rmse) %>% arrange(ecoregion) %>%
+    dplyr::select(ecozone, ecoregion, caribou, blbw, boch, brcr, btnw, cawa, cmwa, osfl, pigr, rubl, swth, wwcr, allbirds, forestbirds, allwaterfowl, cavitynesters, groundnesters, overwaternesters)
+write_csv(x2, paste0('output/tables/models_rmse_by_ecoregion_rnr.csv'))
 
 # Summarize R2 and RMSE by species x ecoregion
-x2a = dplyr::select(z, ecoregion, species, r2) %>% spread(ecoregion, r2) %>% mutate(metric="R2", id=as.integer(seq(1,36,2)))
-x2b = dplyr::select(z, ecoregion, species, rmse) %>% spread(ecoregion, rmse) %>% mutate(metric="RMSE", id=as.integer(seq(2,37,2)))
-x2 = bind_rows(x2a, x2b) %>% arrange(id)
-names(x2) = c('Species', 'Metric', paste0("Ecor",unique(z$ecoregion)),"id")
-x2 = mutate(x2, id=NULL)
-write_csv(x2, paste0('output/tables/models_r2rmse_by_ecoregion_rnr.csv'))
+#x2a = dplyr::select(z, ecoregion, species, r2) %>% spread(ecoregion, r2) %>% mutate(metric="R2", id=as.integer(seq(1,36,2)))
+#x2b = dplyr::select(z, ecoregion, species, rmse) %>% spread(ecoregion, rmse) %>% mutate(metric="RMSE", id=as.integer(seq(2,37,2)))
+#x2 = bind_rows(x2a, x2b) %>% arrange(id)
+#names(x2) = c('Species', 'Metric', paste0("Ecor",unique(z$ecoregion)),"id")
+#x2 = mutate(x2, id=NULL)
+#write_csv(x2, paste0('output/tables/models_r2rmse_by_ecoregion_rnr.csv'))
 
 
 # Summarize variable importance by species x ecoregion
-x2a = dplyr::select(z, ecoregion, species, cmi_tstat) %>% spread(ecoregion, cmi_tstat) %>% mutate(surrogate="CMI", id=as.integer(seq(1,72,4)))
-x2b = dplyr::select(z, ecoregion, species, gpp_tstat) %>% spread(ecoregion, gpp_tstat) %>% mutate(surrogate="GPP", id=as.integer(seq(2,73,4)))
-x2c = dplyr::select(z, ecoregion, species, led_tstat) %>% spread(ecoregion, led_tstat) %>% mutate(surrogate="LED", id=as.integer(seq(3,74,4)))
-x2d = dplyr::select(z, ecoregion, species, lcc_tstat) %>% spread(ecoregion, lcc_tstat) %>% mutate(surrogate="LCC", id=as.integer(seq(4,75,4)))
-x2 = bind_rows(x2a, x2b, x2c, x2d) %>% arrange(id)
-names(x2) = c('Species', 'Metric', paste0("Ecor",unique(z$ecoregion)),"id")
-x2 = mutate(x2, id=NULL)
-write_csv(x2, paste0('output/tables/surrogate_importance_rnr.csv'))
+#x2a = dplyr::select(z, ecoregion, species, cmi_tstat) %>% spread(ecoregion, cmi_tstat) %>% mutate(surrogate="CMI", id=as.integer(seq(1,72,4)))
+#x2b = dplyr::select(z, ecoregion, species, gpp_tstat) %>% spread(ecoregion, gpp_tstat) %>% mutate(surrogate="GPP", id=as.integer(seq(2,73,4)))
+#x2c = dplyr::select(z, ecoregion, species, led_tstat) %>% spread(ecoregion, led_tstat) %>% mutate(surrogate="LED", id=as.integer(seq(3,74,4)))
+#x2d = dplyr::select(z, ecoregion, species, lcc_tstat) %>% spread(ecoregion, lcc_tstat) %>% mutate(surrogate="LCC", id=as.integer(seq(4,75,4)))
+#x2 = bind_rows(x2a, x2b, x2c, x2d) %>% arrange(id)
+#names(x2) = c('Species', 'Metric', paste0("Ecor",unique(z$ecoregion)),"id")
+#x2 = mutate(x2, id=NULL)
+#write_csv(x2, paste0('output/tables/surrogate_importance_rnr.csv'))
 
 
 # Summarize variable importance - second try
 x3 = dplyr::select(z, ecoregion, species, cmi_tstat, gpp_tstat, led_tstat, lcc_tstat) %>%
     mutate(cmi=as.integer(0),gpp=as.integer(0),led=as.integer(0),lcc=as.integer(0)) %>%
-    mutate(cmi_tstat=if_else(is.na(cmi_tstat),0,cmi_tstat)) %>%
-    mutate(gpp_tstat=if_else(is.na(gpp_tstat),0,gpp_tstat)) %>%
-    mutate(led_tstat=if_else(is.na(led_tstat),0,led_tstat)) %>%
-    mutate(lcc_tstat=if_else(is.na(lcc_tstat),0,lcc_tstat))
+    mutate(cmi_tstat=if_else(is.na(cmi_tstat),0,abs(cmi_tstat))) %>%
+    mutate(gpp_tstat=if_else(is.na(gpp_tstat),0,abs(gpp_tstat))) %>%
+    mutate(led_tstat=if_else(is.na(led_tstat),0,abs(led_tstat))) %>%
+    mutate(lcc_tstat=if_else(is.na(lcc_tstat),0,abs(lcc_tstat)))
 for (i in 1:nrow(x3)) {
     print(i)
     if (max(x3[i,"cmi_tstat"],x3[i,"gpp_tstat"],x3[i,"led_tstat"],x3[i,"lcc_tstat"])==x3[i,"cmi_tstat"]) {
@@ -90,16 +94,42 @@ write_csv(x3, paste0('output/tables/surrogate_importance_counts.csv'))
 
 
 # Sum variable importance by species
+x = group_by(z, species) %>% #mutate(one=1) %>% summarize(eco=sum(one))
+    mutate(cmi_p=if_else(cmi_p <=0.05, 1, 0),gpp_p=if_else(gpp_p <=0.05, 1, 0),led_p=if_else(led_p <=0.05, 1, 0),lcc_p=if_else(lcc_p <=0.05, 1, 0)) %>%
+    summarize(cmi=sum(cmi_p,na.rm=T), gpp=sum(gpp_p,na.rm=T), led=sum(led_p,na.rm=T), lcc=sum(lcc_p,na.rm=T)) %>%
+    mutate(rank=case_when(
+        species=="allbirds" ~ 13,
+        species=="forestbirds" ~ 12,
+        species=="allwaterfowl" ~ 18,
+        species=="cavitynesters" ~ 15,
+        species=="groundnesters" ~ 16,
+        species=="overwaternesters" ~ 17,
+        species=="blbw" ~ 1,
+        species=="boch" ~ 2,
+        species=="brcr" ~ 3,
+        species=="btnw" ~ 4,
+        species=="cawa" ~ 5,
+        species=="cmwa" ~ 6,
+        species=="osfl" ~ 7,
+        species=="pigr" ~ 8,
+        species=="rubl" ~ 9,
+        species=="swth" ~ 10,
+        species=="wwcr" ~ 11,
+        TRUE ~ 0)) %>%
+     arrange(rank) %>% mutate(rank=NULL)
+write_csv(x, paste0('output/tables/surrogate_significance_counts_sum.csv'))
+
+# Sum number of times coefficients are significant
 x = read_csv('output/tables/surrogate_importance_counts.csv') %>%
     group_by(species) %>%
     summarize(cmi=sum(cmi), gpp=sum(gpp), led=sum(led), lcc=sum(lcc)) %>%
     mutate(rank=case_when(
-        species=="allbirds" ~ 12,
-        species=="forestbirds" ~ 13,
-        species=="allwaterfowl" ~ 15,
-        species=="cavitynesters" ~ 16,
-        species=="groundnesters" ~ 17,
-        species=="overwaternesters" ~ 18,
+        species=="allbirds" ~ 13,
+        species=="forestbirds" ~ 12,
+        species=="allwaterfowl" ~ 18,
+        species=="cavitynesters" ~ 15,
+        species=="groundnesters" ~ 16,
+        species=="overwaternesters" ~ 17,
         species=="blbw" ~ 1,
         species=="boch" ~ 2,
         species=="brcr" ~ 3,

@@ -90,5 +90,15 @@ for (eco in eco_list) {
     }
 }
 
-ecostats = mutate(ecostats, networks = if_else(nets_rep < nets_nonrep, nets_rep*2, nets_nonrep*2))
+#ecostats = mutate(ecostats, networks = if_else(nets_rep < nets_nonrep, nets_rep*2, nets_nonrep*2))
+ecostats = mutate(ecostats, networks = case_when(
+    nets_rep > 500 & nets_nonrep > 500 ~ 1000,
+    nets_nonrep > 10*nets_rep & nets_nonrep > 500 ~ nets_rep + 500,
+    nets_nonrep > 10*nets_rep & nets_nonrep <= 500 ~ nets_rep + 10*nets_rep,
+    nets_rep > 10*nets_nonrep & nets_rep > 500 ~ 500 + nets_nonrep,
+    nets_rep > 10*nets_nonrep & nets_rep <= 500 ~ 10*nets_nonrep + nets_nonrep,
+    nets_nonrep >= nets_rep & nets_nonrep > 500 ~ nets_rep + 500,
+    nets_rep > nets_nonrep & nets_rep > 500 ~ 500 + nets_nonrep,
+    TRUE ~ nets_rep + nets_nonrep))
 write_csv(ecostats, 'code/input/ecoregion_statistics.csv')
+write_csv(ecostats, 'output/tables/ecoregion_statistics.csv')

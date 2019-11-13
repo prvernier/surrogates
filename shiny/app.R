@@ -74,6 +74,8 @@ server = function(input, output) {
 
     testdata <- reactive({
         
+        set.seed(20191021)
+
         # assign species string to a new variable 'test' in ks table
         spp = tolower(input$species)
         assign("tmp", ks[[spp]])
@@ -81,7 +83,7 @@ server = function(input, output) {
         
         # create empty summary table
         z = tibble(Ecozone=as.character(), Ecoregion=as.character(), Intactness=as.numeric(), Networks=as.integer(), CMI=as.character(), 
-            GPP=as.character(), LED=as.character(), LCC=as.character(), R2 = as.numeric(), RMSE = as.numeric())
+            GPP=as.character(), LED=as.character(), LCC=as.character(), Adj_R2 = as.numeric(), RMSE = as.numeric())
         i = 1
 
         # individual species or groups of species
@@ -100,11 +102,21 @@ server = function(input, output) {
             nnr = nrow(x) - nr # number of non-rep networks
             if (nr > 500 & nnr > 500) {
                 x = group_by(x, rep) %>% sample_n(if_else(rep==1,500,500)) %>% ungroup()
-            } else if (nnr >= nr) {
-                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,nr)) %>% ungroup()
-            } else if (nr > nnr) {
-                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nnr,nnr)) %>% ungroup()
+            } else if (nnr > 10*nr & nnr>500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,500)) %>% ungroup()
+            } else if (nnr > 10*nr & nnr<=500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,10*nr)) %>% ungroup()
+            } else if (nr > 10*nnr & nr>500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,500,nnr)) %>% ungroup()
+            } else if (nr > 10*nnr & nr<=500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,10*nnr,nnr)) %>% ungroup()
+            } else if (nnr >= nr & nnr>500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,500)) %>% ungroup()
+            } else if (nr > nnr & nr>500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,500,nnr)) %>% ungroup()
             }
+            rnet1 = length(x$rep[x$rep==1])
+            rnet0 = length(x$rep[x$rep==0])
             if (sum(!is.na(x[spp])) > 2) {
                 
                 # filter networks
@@ -120,12 +132,14 @@ server = function(input, output) {
                 z[i,"Ecozone"] = zone$ecozone[zone$ecoregion==eco]
                 z[i,"Ecoregion"] = eco
                 z[i,"Intactness"] = zone$intactness[zone$ecoregion==eco]
-                z[i,"Networks"] = nrow(x) 
+                z[i,"Networks"] = paste0(nrow(x)," (",rnet1,",",rnet0,")") 
+                #z[i,"Networks1"] = rnet1 #paste0(nrow(x)," (",rnet1,",",rnet0,")") 
+                #z[i,"Networks0"] = rnet0 #paste0(nrow(x)," (",rnet1,",",rnet0,")") 
                 z[i,"CMI"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["ks_cmi"])," (",sprintf("%.2f",vi["ks_cmi",1]),")")
                 z[i,"GPP"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["ks_gpp"])," (",sprintf("%.2f",vi["ks_gpp",1]),")")
                 z[i,"LED"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["ks_led"])," (",sprintf("%.2f",vi["ks_led",1]),")")
                 z[i,"LCC"] = paste0(sprintf("%.3f",summary(m1)$coefficients[,1]["bc_lcc"])," (",sprintf("%.2f",vi["bc_lcc",1]),")")
-                z[i,"R2"] = sprintf("%.3f",summary(m1)$r.squared)
+                z[i,"Adj_R2"] = sprintf("%.3f",summary(m1)$adj.r.squared)
                 z[i,"RMSE"] = sprintf("%.3f",modelr::rmse(m1,x))
                 # calculate average values
                 if (input$ave==TRUE) {
@@ -138,7 +152,7 @@ server = function(input, output) {
                         sum_led_vi = vi["ks_led",1]
                         sum_lcc = summary(m1)$coefficients[,1]["bc_lcc"]
                         sum_lcc_vi = vi["bc_lcc",1]
-                        sum_r2 = summary(m1)$r.squared
+                        sum_r2 = summary(m1)$adj.r.squared
                         sum_rmse = modelr::rmse(m1,x)
                     } else {
                         sum_cmi = sum_cmi + summary(m1)$coefficients[,1]["ks_cmi"]
@@ -149,7 +163,7 @@ server = function(input, output) {
                         sum_led_vi = sum_led_vi + vi["ks_led",1]
                         sum_lcc = sum_lcc + summary(m1)$coefficients[,1]["bc_lcc"]
                         sum_lcc_vi = sum_lcc_vi + vi["bc_lcc",1]
-                        sum_r2 = sum_r2 + summary(m1)$r.squared
+                        sum_r2 = sum_r2 + summary(m1)$adj.r.squared
                         sum_rmse = sum_rmse + modelr::rmse(m1,x)
                     }
                 }
@@ -165,7 +179,7 @@ server = function(input, output) {
             z[i,"GPP"] = "" # paste0(sprintf("%.3f",sum_gpp/(i-1))," (",sprintf("%.2f",sum_gpp_vi/(i-1)),")")
             z[i,"LED"] = "" # paste0(sprintf("%.3f",sum_led/(i-1))," (",sprintf("%.2f",sum_led_vi/(i-1)),")")
             z[i,"LCC"] = "" # paste0(sprintf("%.3f",sum_lcc/(i-1))," (",sprintf("%.2f",sum_lcc_vi/(i-1)),")")
-            z[i,"R2"] = sprintf("%.3f",sum_r2/(i-1))
+            z[i,"Adj_R2"] = sprintf("%.3f",sum_r2/(i-1))
             z[i,"RMSE"] = sprintf("%.3f",sum_rmse/(i-1))
         }
         return(z)
@@ -179,6 +193,8 @@ server = function(input, output) {
 
     testdata2 <- reactive({
         
+        set.seed(20191021)
+
         spp = tolower(input$species)
         assign("tmp", ks[[spp]])
         ks = mutate(ks, test = tmp)
@@ -190,24 +206,24 @@ server = function(input, output) {
         }
         i = 1
         for (eco in eco_list) {
-            #if (input$repnorep==TRUE) {
-                x = filter(ks, ecoregion==eco) #& (rep==0 | rep==1))
-            #} else {
-            #     x = filter(ks, ecoregion==eco)
-            #     minNet = min(table(x$rep))
-            #     x = group_by(x, rep) %>% sample_n(minNet) %>% ungroup()
-            #}
-
-
+            x = filter(ks, ecoregion==eco) #& (rep==0 | rep==1))
             nr = sum(x$rep) # number of rep networks
             nnr = nrow(x) - nr # number of non-rep networks
-            if (nnr >= nr) {
-                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,nr)) %>% ungroup()
-            } else if (nr > nnr) {
-                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nnr,nnr)) %>% ungroup()
+            if (nr > 500 & nnr > 500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,500,500)) %>% ungroup()
+            } else if (nnr > 10*nr & nnr>500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,500)) %>% ungroup()
+            } else if (nnr > 10*nr & nnr<=500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,10*nr)) %>% ungroup()
+            } else if (nr > 10*nnr & nr>500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,500,nnr)) %>% ungroup()
+            } else if (nr > 10*nnr & nr<=500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,10*nnr,nnr)) %>% ungroup()
+            } else if (nnr >= nr & nnr>500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,nr,500)) %>% ungroup()
+            } else if (nr > nnr & nr>500) {
+                x = group_by(x, rep) %>% sample_n(if_else(rep==1,500,nnr)) %>% ungroup()
             }
-
-
             if (sum(!is.na(x[spp])) > 2) {
                 x = filter(x, !is.na(x[[spp]]))
                 m1 = lm(test ~ ks_cmi + ks_gpp + ks_led + bc_lcc, data=x)
@@ -248,15 +264,15 @@ server = function(input, output) {
     output$plot2 <- renderPlot({
         z = testdata()
         plot(z$Intactness, z$R2)
-        abline(lm(z$R2 ~ z$Intactness), col="red")
+        abline(lm(z$Adj_R2 ~ z$Intactness), col="red")
         #lines(lowess(z$Intactness, z$R2), col="blue")
     }, width=600)
 
     output$plot3 <- renderPlot({
         z = testdata()
-        z$R2 = as.numeric(z$R2)
-        bp = ggplot(z, aes(x=Ecozone, y=R2)) + geom_boxplot(aes(group=Ecozone), varwidth = TRUE)
-        bp + ggtitle("Ecoregion-level R2 values by Ecozone")
+        z$Adj_R2 = as.numeric(z$Adj_R2)
+        bp = ggplot(z, aes(x=Ecozone, y=Adj_R2)) + geom_boxplot(aes(group=Ecozone), varwidth = TRUE)
+        bp + ggtitle("Ecoregion-level Adj-R2 values by Ecozone")
         bp + scale_y_continuous(limits=c(0,1), breaks=seq(0,1,0.1))
     }, height=600)
 

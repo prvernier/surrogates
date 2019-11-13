@@ -1,9 +1,0 @@
-**Model R-squared (R2).** R-squared summarizes how much of the total variance of the target outcome (e.g., KS for ALLBIRDS) is explained by the model (e.g., KS_CMI + KS_GPP + KS_LED + BC_LCC). The higher the R-squared value, the better the model explains the data.
-
-**RMSE.** Root mean squared error is a measure of uncertainty around the regression line.
-
-**Coefficients: CMI, GPP, LED, LCC.** An increase in surrogate X by one unit (KS or BC) increases the prediction for test species Y by z KS units (z = coefficient value) when all other variable values remain fixed. For example, for the ALLBIRDS model, an increase of one unit of KS_CMI increases predicted KS of ALLBIRDS by 0.235 units.
-
-**Variable importance: CMI, GPP, LED, LCC.** The importance of a feature in a linear regression model can be measured by the absolute value of its t-statistic. The t-statistic is the estimated weight scaled with its standard error. The more variance the estimated weight has (= the less certain we are about the correct value), the less important the feature is.
-
-  - *Importance is indicated in the brackets under the CMI, GPP, LED, and LCC columns of the "Summary tables" tab and by the "t-value" column in the "Other factors" tab*.
