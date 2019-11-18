@@ -1,6 +1,6 @@
 # Surrogates Paper
 
-Revised: 2019-09-06
+Revised: 2019-11-14
 
 Evaluating the Effectiveness of Biodiversity Surrogates
 
@@ -10,7 +10,13 @@ Beacons et al. <i>in prep</i>. Evaluating the Effectiveness of Biodiversity Surr
 
 ## Shiny app
 
-  * https://prvernier.shinyapps.io/surrogates/ 
+In this study we develop 662 multiple linear regression models between test species and environmental surrogates. Due to the large amount of resultant model output, we developed a Shiny app to enable readers and conservation planners in the boreal region to explore the results of the analysis and identify species and ecoregion combinations that are adequately or inadequately represented by benchmark networks selected using surrogates of large-scale environmental variation. Here we provide instructions on how to run the app from a local machine and also provides summary tables with all input data used in the analyses and the app.
+
+  1. Install R
+  2. Install the following additional packages:
+    >install.packages(c("sf","DT","caret","shiny","leaflet","tidyverse"))
+  3. Start the Shiny app:
+    >runGitHub( "prvernier/surrogates", subdir="shiny")
 
 ## Supporting Information
 

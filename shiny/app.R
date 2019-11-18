@@ -22,7 +22,7 @@ ui = fluidPage(
 		
         sidebarPanel(width=3,
             selectInput(inputId = "species",
-				label = "Select species:",
+				label = "Select test species:",
 				choices = c("CARIBOU",songbirds,'ALLBIRDS','FORESTBIRDS','ALLWATERFOWL','CAVITYNESTERS','GROUNDNESTERS','OVERWATERNESTERS'),
 				selected = "CAWA"),
            # hr(),
@@ -34,6 +34,9 @@ ui = fluidPage(
 	
     mainPanel(
 		tabsetPanel(
+            tabPanel("Overview",
+                htmlOutput("readme")
+                ),
             tabPanel("Regression analysis",
                 dataTableOutput("tab1")
                 ),
@@ -45,10 +48,10 @@ ui = fluidPage(
                 br(),
                 plotOutput("plot1")
                 ),
-            tabPanel("Intactness effect",
-                br(),
-                plotOutput("plot2")
-                ),
+            #tabPanel("Intactness effect",
+            #    br(),
+            #    plotOutput("plot2")
+            #    ),
             tabPanel("Ecozone boxplots",
                 br(),
                 plotOutput("plot3")
@@ -60,10 +63,6 @@ ui = fluidPage(
                   column(6,plotOutput(outputId="plot6", width="500px",height="300px")),  
                   column(6,plotOutput(outputId="plot7", width="500px",height="300px"))
                 )
-                ),
-            tabPanel("Definitions",
-                br(),
-                htmlOutput("methods")
                 )
             )
         )
@@ -327,7 +326,7 @@ server = function(input, output) {
     )
 
     output$ecormap <- renderLeaflet({
-        z = testdata() %>% mutate(Ecoregion=as.numeric(Ecoregion), Species=as.numeric(R2))
+        z = testdata() %>% mutate(Ecoregion=as.numeric(Ecoregion), Species=as.numeric(Adj_R2))
         ecor_maps = left_join(ecor_maps, z, by=c("ecoreg"="Ecoregion"))
         i = ecor_maps[["Species"]]
         bins <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
@@ -346,8 +345,8 @@ server = function(input, output) {
                 position = "bottomright")
     })
 
-    output$methods <- renderText({
-        includeMarkdown("definitions.Rmd")
+    output$readme <- renderText({
+        includeMarkdown("readme.Rmd")
     })
 
 }
