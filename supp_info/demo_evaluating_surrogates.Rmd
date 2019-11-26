@@ -205,7 +205,7 @@ In this example, the network we selected can be considered to be representative 
 ## Step 8 - Maximize representation
 ***
 
-In the final step of this vignette, we calculated the representation index for all networks that were created for ecoregion 89 and we then selected the top network for each test species among all networks and among represetative networks (based on surrogates).
+In the final step of this vignette, we calculated the representation index for all networks that were created for ecoregion 89 and we then selected the top network for each test species among all networks and among representative networks (based on surrogates).
 
 ```{r, message=FALSE, warning=FALSE}
 # Test features (Boreal Chickadee, Canada Warbler, Rusty Blackbird, and boreal caribou)

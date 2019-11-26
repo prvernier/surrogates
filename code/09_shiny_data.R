@@ -19,7 +19,9 @@ library(tidyverse)
 
 # KS table (rep and nonrep networks)
 ks = read_csv("output/tables/species_surrogates_ks_rnr.csv")
-nets = read_csv("code/input/ecoregion_statistics.csv") %>% dplyr::select(ecoregion, intactness)
+nets = read_csv("code/input/ecoregion_statistics.csv") %>% dplyr::select(ecoregion, intactness, mdr,
+    blbw_dens, boch_dens, brcr_dens, btnw_dens, cawa_dens, cmwa_dens, osfl_dens, pigr_dens, rubl_dens, swth_dens, wwcr_dens,
+    caribou_dens,allbirds_dens,forestbirds_dens,allwaterfowl_dens,cavitynesters_dens,groundnesters_dens,overwaternesters_dens)
 ks = left_join(ks, nets)
 save(ks, file = "shiny/ks.Rdata")
 

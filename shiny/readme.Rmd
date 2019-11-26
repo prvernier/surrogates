@@ -16,27 +16,27 @@ The **Regression analysis** tab provides results for all regression models devel
 
 <br>
 
-#### Map output
+#### Mapped predictions
 
-The **Map output** provides a visual look at the distribution of adjusted R2 values (i.e., model strength) across the ecoregions of the boreal region of Canada.
-
-<br>
-
-#### Observed vs predicted
-
-The **Observed vs predicted** tab plots the relationship between observed KS values and predicted (fitted) KS values. A good model would be characterized by an upward linear relationship and show a clear separation between representative (teal) vs non-representative (red) networks.
+The **Mapped predictions** provides a visual look at the distribution of adjusted R2 values (i.e., model strength) across the ecoregions of the boreal region of Canada.
 
 <br>
 
-#### Ecozone boxplots
+#### Observed vs fitted
 
-The **Ecozone boxplots** tab uses bloxplots to show the distribution of ecoregion-level adjusted R2 values within ecozones.
+The **Observed vs fitted** tab plots the relationship between observed KS values and predicted (fitted) KS values. A good model would be characterized by an upward linear relationship and show a clear separation between representative (teal) vs non-representative (red) networks.
 
 <br>
 
-#### Surrogates boxplots
+#### Coefficient boxplots
 
-The **Surrogates boxplots** tab uses boxplots to show the distribution of ecoregion-level surrogate coefficients within ecozones.
+The **Coefficients boxplots** tab uses boxplots to show the distribution of ecoregion-level surrogate coefficients within ecozones.
+
+<br>
+
+#### Explanatory factors
+
+The **Explanatory factors** tab uses bloxplots and scatterplots to show the distribution of ecoregion-level adjusted R2 values against ecozones, intactness, network size (approximated by MDR), and density.
 
 <br>
 

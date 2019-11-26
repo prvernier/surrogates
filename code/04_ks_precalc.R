@@ -100,5 +100,26 @@ ecostats = mutate(ecostats, networks = case_when(
     nets_nonrep >= nets_rep & nets_nonrep > 500 ~ nets_rep + 500,
     nets_rep > nets_nonrep & nets_rep > 500 ~ 500 + nets_nonrep,
     TRUE ~ nets_rep + nets_nonrep))
+
+write_csv(ecostats, 'code/input/ecoregion_statistics.csv')
+write_csv(ecostats, 'output/tables/ecoregion_statistics.csv')
+
+# Add MDR and density information
+library(tidyverse)
+ecostats = read_csv('output/tables/ecoregion_statistics.csv') %>% mutate(
+    blbw=NULL,boch=NULL,brcr=NULL,btnw=NULL,cawa=NULL,cmwa=NULL,osfl=NULL,pigr=NULL,rubl=NULL,swth=NULL,wwcr=NULL,
+    caribou=NULL,AllBirds=NULL,ForestBirds=NULL,AllWaterfowl=NULL,CavityNesters=NULL,GroundNesters=NULL,OverwaterNesters=NULL,
+    AllBirds_dens=NULL,ForestBirds_dens=NULL,AllWaterfowl_dens=NULL,CavityNesters_dens=NULL,GroundNesters_dens=NULL,OverwaterNesters_dens=NULL)
+
+mdr = read_csv('code/input/pan_eco_mdr_v4.csv') %>% select(ecoregion, mdr2)
+ecostats = left_join(ecostats, mdr) %>% mutate(mdr=mdr2, mdr2=NULL)
+dens = read_csv('code/input/species_stats18.csv') %>% dplyr::select(ecoregion, species, mean)
+for (i in unique(dens$species)) {
+    ecostats[paste0(tolower(i),'_dens')] = 0
+    for (j in unique(dens$ecoregion)) {
+        ecostats[[paste0(tolower(i),"_dens")]][ecostats$ecoregion==j] = dens$mean[dens$ecoregion==j & dens$species==i]
+    }
+}
+
 write_csv(ecostats, 'code/input/ecoregion_statistics.csv')
 write_csv(ecostats, 'output/tables/ecoregion_statistics.csv')

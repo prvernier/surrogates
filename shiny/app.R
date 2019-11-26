@@ -10,9 +10,10 @@ load("ecor_maps.Rdata")
 load("ecoz_maps.Rdata")
 load("ks.Rdata")
 
-ks = mutate(ks, ecozone=as.character(substr(ecozone,2,nchar(ecozone))))
-zone = select(ks, ecozone, ecoregion, intactness) %>% unique()
 songbirds = c('BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR')
+waterfowl = c('ALLBIRDS','FORESTBIRDS','ALLWATERFOWL','CAVITYNESTERS','GROUNDNESTERS','OVERWATERNESTERS')
+ks = mutate(ks, ecozone=as.character(substr(ecozone,2,nchar(ecozone))))
+zone = select(ks, ecozone, ecoregion, intactness, mdr, paste0(tolower(songbirds),"_dens"), caribou_dens, paste0(tolower(waterfowl),"_dens")) %>% unique()
 
 ui = fluidPage(
 	
@@ -25,9 +26,12 @@ ui = fluidPage(
 				label = "Select test species:",
 				choices = c("CARIBOU",songbirds,'ALLBIRDS','FORESTBIRDS','ALLWATERFOWL','CAVITYNESTERS','GROUNDNESTERS','OVERWATERNESTERS'),
 				selected = "CAWA"),
-           # hr(),
-            #checkboxInput("repnorep", "Use only rep and nonrep networks", TRUE),
             checkboxInput("ave", "Show averages at bottom of table", FALSE),
+            #hr(),
+            #selectInput(inputId = "factors",
+			#	label = "Select confounding factor:",
+			#	choices = c("Intactness","MDR","Density"),
+			#	selected = "intactness"),
             hr(),           
             downloadButton('downloadData',"Download data")
        ),
@@ -40,28 +44,36 @@ ui = fluidPage(
             tabPanel("Regression analysis",
                 dataTableOutput("tab1")
                 ),
-            tabPanel("Map output",
+            tabPanel("Mapped predictions",
                 br(),
                 leafletOutput("ecormap", height=600)
                 ),
-            tabPanel("Observed vs predicted",
+            tabPanel("Observed vs fitted",
                 br(),
                 plotOutput("plot1")
                 ),
-            #tabPanel("Intactness effect",
+            #tabPanel("Confounding factors",
             #    br(),
             #    plotOutput("plot2")
             #    ),
-            tabPanel("Ecozone boxplots",
-                br(),
-                plotOutput("plot3")
-                ),
+            #tabPanel("Ecozone boxplots",
+            #    br(),
+            #    plotOutput("plot3")
+            #    ),
             tabPanel("Coefficient boxplots",
                 fluidRow(
                   column(6,plotOutput(outputId="plot4", width="500px",height="300px")),  
                   column(6,plotOutput(outputId="plot5", width="500px",height="300px")),
                   column(6,plotOutput(outputId="plot6", width="500px",height="300px")),  
                   column(6,plotOutput(outputId="plot7", width="500px",height="300px"))
+                )
+                ),
+            tabPanel("Explanatory factors",
+                fluidRow(
+                  column(6,plotOutput(outputId="plot3", width="500px",height="400px")),
+                  column(6,plotOutput(outputId="plot2a", width="500px",height="400px")),  
+                  column(6,plotOutput(outputId="plot2b", width="500px",height="400px")),
+                  column(6,plotOutput(outputId="plot2c", width="500px",height="400px"))  
                 )
                 )
             )
@@ -81,8 +93,10 @@ server = function(input, output) {
         ks = mutate(ks, test = tmp)
         
         # create empty summary table
-        z = tibble(Ecozone=as.character(), Ecoregion=as.character(), Intactness=as.numeric(), Networks=as.integer(), CMI=as.character(), 
-            GPP=as.character(), LED=as.character(), LCC=as.character(), Adj_R2 = as.numeric(), RMSE = as.numeric())
+        z = tibble(Ecozone=as.character(), Ecoregion=as.character(), Networks=as.integer(), 
+            Intactness=as.numeric(), MDR=as.integer(), Density=as.numeric(),
+            CMI=as.character(), GPP=as.character(), LED=as.character(), LCC=as.character(), 
+            Adj_R2 = as.numeric(), RMSE = as.numeric())
         i = 1
 
         # individual species or groups of species
@@ -131,6 +145,8 @@ server = function(input, output) {
                 z[i,"Ecozone"] = zone$ecozone[zone$ecoregion==eco]
                 z[i,"Ecoregion"] = eco
                 z[i,"Intactness"] = zone$intactness[zone$ecoregion==eco]
+                z[i,"MDR"] = zone$mdr[zone$ecoregion==eco]
+                z[i,"Density"] = zone[[paste0(tolower(input$species),"_dens")]][zone$ecoregion==eco]
                 z[i,"Networks"] = paste0(nrow(x)," (",rnet1,",",rnet0,")") 
                 #z[i,"Networks1"] = rnet1 #paste0(nrow(x)," (",rnet1,",",rnet0,")") 
                 #z[i,"Networks0"] = rnet0 #paste0(nrow(x)," (",rnet1,",",rnet0,")") 
@@ -174,6 +190,8 @@ server = function(input, output) {
             z[i,"Ecoregion"] = ""
             z[i,"Networks"] = ""
             z[i,"Intactness"] = ""
+            z[i,"MDR"] = ""
+            z[i,"Density"] = ""
             z[i,"CMI"] = "" # paste0(sprintf("%.3f",sum_cmi/(i-1))," (",sprintf("%.2f",sum_cmi_vi/(i-1)),")")
             z[i,"GPP"] = "" # paste0(sprintf("%.3f",sum_gpp/(i-1))," (",sprintf("%.2f",sum_gpp_vi/(i-1)),")")
             z[i,"LED"] = "" # paste0(sprintf("%.3f",sum_led/(i-1))," (",sprintf("%.2f",sum_led_vi/(i-1)),")")
@@ -260,20 +278,50 @@ server = function(input, output) {
         p + facet_wrap(vars(ecoregion), ncol=n) #, scales = "free_y")
     }, height=800)
 
-    output$plot2 <- renderPlot({
+    output$plot2a <- renderPlot({
         z = testdata()
-        plot(z$Intactness, z$R2)
+        #p <- ggplot(z, aes(Intactness, Adj_R2)) + geom_point() + geom_smooth()
+        #p
+        m2a = lm(Adj_R2 ~ Intactness, data=z)
+        r2a = sprintf("%.3f",summary(m2a)$adj.r.squared)
+        plot(z$Intactness, z$Adj_R2, main=paste0("Adjusted R2 and Intactness (R2 = ",r2a,")"), xlab="Intactness", ylab="Adjusted R2")
         abline(lm(z$Adj_R2 ~ z$Intactness), col="red")
         #lines(lowess(z$Intactness, z$R2), col="blue")
-    }, width=600)
+    })
+
+    output$plot2b <- renderPlot({
+        z = testdata()
+        #p <- ggplot(z, aes(MDR, Adj_R2)) + geom_point() + geom_smooth(method='lm')
+        #p
+        m2b = lm(Adj_R2 ~ MDR, data=z)
+        r2b = sprintf("%.3f",summary(m2b)$adj.r.squared)
+        plot(z$MDR, z$Adj_R2, main=paste0("Adjusted R2 and MDR (R2 = ",r2b,")"), xlab="Intactness", ylab="Adjusted R2")
+        abline(lm(z$Adj_R2 ~ z$MDR), col="red")
+        #lines(lowess(z$Intactness, z$R2), col="blue")
+    })
+
+    output$plot2c <- renderPlot({
+        z = testdata()
+        #p <- ggplot(z, aes(Density, Adj_R2)) + geom_point() + geom_smooth(method=lm)
+        #p
+        m2c = lm(Adj_R2 ~ Density, data=z)
+        r2c = sprintf("%.3f",summary(m2c)$adj.r.squared)
+        plot(z$Density, z$Adj_R2, main=paste0("Adjusted R2 and Density (R2 = ",r2c,")"), xlab="Intactness", ylab="Adjusted R2")
+        abline(lm(z$Adj_R2 ~ z$Density), col="red")
+        #lines(lowess(z$Intactness, z$R2), col="blue")
+    })
 
     output$plot3 <- renderPlot({
         z = testdata()
         z$Adj_R2 = as.numeric(z$Adj_R2)
-        bp = ggplot(z, aes(x=Ecozone, y=Adj_R2)) + geom_boxplot(aes(group=Ecozone), varwidth = TRUE)
-        bp + ggtitle("Ecoregion-level Adj-R2 values by Ecozone")
-        bp + scale_y_continuous(limits=c(0,1), breaks=seq(0,1,0.1))
-    }, height=600)
+        z$Ecozone = as.factor(z$Ecozone)
+        m3 = lm(Adj_R2 ~ Ecozone, data=z)
+        r3 = sprintf("%.3f",summary(m3)$adj.r.squared)
+        boxplot(z$Adj_R2 ~ z$Ecozone, main=paste0("Adjusted R2 and Ecozone (R2 = ",r3,")"), xlab="Ecozone", ylab="Adjusted R2")
+        #bp = ggplot(z, aes(x=Ecozone, y=Adj_R2)) + geom_boxplot(aes(group=Ecozone), varwidth = TRUE)
+        #bp + ggtitle("Ecoregion-level Adj-R2 values by Ecozone")
+        #bp + scale_y_continuous(limits=c(0,1), breaks=seq(0,1,0.1))
+    })
 
     output$plot4 <- renderPlot({
         z = testdata()
@@ -331,7 +379,7 @@ server = function(input, output) {
         i = ecor_maps[["Species"]]
         bins <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
         pal <- colorBin("YlOrRd", domain = i, bins = bins) #, na.color = "transparent")
-        ecoPopup = paste0("Ecozone: ",ecor_maps$ecozone,"<br>Ecoregion: ",ecor_maps$ecoreg,"<br>Networks: ",ecor_maps$nets,"<br>CMI: ",ecor_maps[["CMI"]],"<br>GPP: ",ecor_maps[["GPP"]],"<br>LED: ",ecor_maps[["LED"]],"<br>LCC: ",ecor_maps[["LCC"]],"<br>R-squared: ",ecor_maps[["Species"]],"<br>RMSE: ",ecor_maps[["RMSE"]])
+        ecoPopup = paste0("Ecozone: ",ecor_maps$ecozone,"<br>Ecoregion: ",ecor_maps$ecoreg,"<br>Networks: ",ecor_maps$nets,"<br>CMI: ",ecor_maps[["CMI"]],"<br>GPP: ",ecor_maps[["GPP"]],"<br>LED: ",ecor_maps[["LED"]],"<br>LCC: ",ecor_maps[["LCC"]],"<br>Adjusted R2: ",ecor_maps[["Species"]],"<br>RMSE: ",ecor_maps[["RMSE"]])
         leaflet(ecor_maps) %>%
             addProviderTiles("Esri.NatGeoWorldMap", "Esri.NatGeoWorldMap") %>%
             addPolygons(data=ecor_maps, fillColor = ~pal(unlist(i)), fill=T, weight=1, color="black", fillOpacity=1, group="Ecoregions", popup=ecoPopup) %>%
@@ -341,7 +389,7 @@ server = function(input, output) {
             overlayGroups = c("Ecozones","Ecoregions"),
             options = layersControlOptions(collapsed = FALSE)) %>%
             hideGroup(c("Ecozones")) %>%
-            addLegend(pal = pal, values = ~i, opacity = 0.7, title = "R-squared",
+            addLegend(pal = pal, values = ~i, opacity = 0.7, title = "Adjusted R2",
                 position = "bottomright")
     })
 
