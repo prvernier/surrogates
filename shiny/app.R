@@ -284,7 +284,7 @@ server = function(input, output) {
         #p
         m2a = lm(Adj_R2 ~ Intactness, data=z)
         r2a = sprintf("%.3f",summary(m2a)$adj.r.squared)
-        plot(z$Intactness, z$Adj_R2, main=paste0("Adjusted R2 and Intactness (R2 = ",r2a,")"), xlab="Intactness", ylab="Adjusted R2")
+        plot(z$Intactness, z$Adj_R2, main=paste0("Adjusted R2 and Intactness (R2 = ",r2a,")"), xlab="Intactness", ylab="Adjusted R2", ylim=c(0,1))
         abline(lm(z$Adj_R2 ~ z$Intactness), col="red")
         #lines(lowess(z$Intactness, z$R2), col="blue")
     })
@@ -295,7 +295,7 @@ server = function(input, output) {
         #p
         m2b = lm(Adj_R2 ~ MDR, data=z)
         r2b = sprintf("%.3f",summary(m2b)$adj.r.squared)
-        plot(z$MDR, z$Adj_R2, main=paste0("Adjusted R2 and MDR (R2 = ",r2b,")"), xlab="Intactness", ylab="Adjusted R2")
+        plot(z$MDR, z$Adj_R2, main=paste0("Adjusted R2 and MDR (R2 = ",r2b,")"), xlab="MDR", ylab="Adjusted R2", ylim=c(0,1))
         abline(lm(z$Adj_R2 ~ z$MDR), col="red")
         #lines(lowess(z$Intactness, z$R2), col="blue")
     })
@@ -306,7 +306,7 @@ server = function(input, output) {
         #p
         m2c = lm(Adj_R2 ~ Density, data=z)
         r2c = sprintf("%.3f",summary(m2c)$adj.r.squared)
-        plot(z$Density, z$Adj_R2, main=paste0("Adjusted R2 and Density (R2 = ",r2c,")"), xlab="Intactness", ylab="Adjusted R2")
+        plot(z$Density, z$Adj_R2, main=paste0("Adjusted R2 and Density (R2 = ",r2c,")"), xlab="Density", ylab="Adjusted R2", ylim=c(0,1))
         abline(lm(z$Adj_R2 ~ z$Density), col="red")
         #lines(lowess(z$Intactness, z$R2), col="blue")
     })
@@ -317,7 +317,7 @@ server = function(input, output) {
         z$Ecozone = as.factor(z$Ecozone)
         m3 = lm(Adj_R2 ~ Ecozone, data=z)
         r3 = sprintf("%.3f",summary(m3)$adj.r.squared)
-        boxplot(z$Adj_R2 ~ z$Ecozone, main=paste0("Adjusted R2 and Ecozone (R2 = ",r3,")"), xlab="Ecozone", ylab="Adjusted R2")
+        boxplot(z$Adj_R2 ~ z$Ecozone, main=paste0("Adjusted R2 and Ecozone (R2 = ",r3,")"), xlab="Ecozone", ylab="Adjusted R2", ylim=c(0,1))
         #bp = ggplot(z, aes(x=Ecozone, y=Adj_R2)) + geom_boxplot(aes(group=Ecozone), varwidth = TRUE)
         #bp + ggtitle("Ecoregion-level Adj-R2 values by Ecozone")
         #bp + scale_y_continuous(limits=c(0,1), breaks=seq(0,1,0.1))
