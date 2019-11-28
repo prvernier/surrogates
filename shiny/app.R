@@ -2,6 +2,7 @@ library(sf)
 library(DT)
 library(caret)
 library(shiny)
+#library(raster)
 library(leaflet)
 library(tidyverse)
 
@@ -62,8 +63,10 @@ ui = fluidPage(
             #    ),
             tabPanel("Coefficient boxplots",
                 fluidRow(
+                  br(),
                   column(6,plotOutput(outputId="plot4", width="500px",height="300px")),  
                   column(6,plotOutput(outputId="plot5", width="500px",height="300px")),
+                  br(),
                   column(6,plotOutput(outputId="plot6", width="500px",height="300px")),  
                   column(6,plotOutput(outputId="plot7", width="500px",height="300px"))
                 )
@@ -218,6 +221,8 @@ server = function(input, output) {
 
         if (input$species %in% songbirds) {
             eco_list = stats$zone[stats$species==spp & stats$pct>0]
+        } else if (input$species=="CARIBOU") {
+            eco_list = c(51,52,53,55,59,60,62,68,69,70,71,72,74,77,78,80,87,88,89,90,94,95,100,103,104,105,136,215,216,217)
         } else {
             eco_list = unique(ks$ecoregion)
         }
@@ -259,7 +264,7 @@ server = function(input, output) {
             }
             i = i + 1
         }
-        z = tibble(ecoregion=x1, observed=x2, fitted=x3, rep=x4)
+        z = tibble(ecoregion=x1, Observed=x2, Fitted=x3, rep=x4)
         return(z)
    })
 
@@ -274,7 +279,13 @@ server = function(input, output) {
         } else {
             n = 7
         }
-        p <- ggplot(z, aes(fitted, observed)) + geom_point(aes(colour=factor(rep))) + geom_smooth(method='lm')
+        z = mutate(z, rep=if_else(rep=="1", "Rep", "Non-rep"))
+        vars <- c("Non-rep"="red", "Rep"="blue")
+        p <- ggplot(z, aes(Fitted, Observed)) + geom_point(aes(colour=factor(rep))) + geom_smooth(method='lm') +  
+            scale_colour_manual(name="Networks:" , values=vars) + theme(legend.position="right") +
+            ggtitle("Observed vs Fitted Values by Ecoregion") + 
+            theme(plot.title = element_text(size=18), legend.title=element_text(size=18), legend.text=element_text(size=15),
+            axis.title.x = element_text(size=15), axis.title.y = element_text(size=15), strip.text.x = element_text(size = 18))
         p + facet_wrap(vars(ecoregion), ncol=n) #, scales = "free_y")
     }, height=800)
 
@@ -306,7 +317,12 @@ server = function(input, output) {
         #p
         m2c = lm(Adj_R2 ~ Density, data=z)
         r2c = sprintf("%.3f",summary(m2c)$adj.r.squared)
-        plot(z$Density, z$Adj_R2, main=paste0("Adjusted R2 and Density (R2 = ",r2c,")"), xlab="Density", ylab="Adjusted R2", ylim=c(0,1))
+        if (input$species=="CARIBOU") {
+            x_lab = "Habitat Quality"
+        } else {
+            x_lab = "Density"
+        }
+        plot(z$Density, z$Adj_R2, main=paste0("Adjusted R2 and ",x_lab," (R2 = ",r2c,")"), xlab=x_lab, ylab="Adjusted R2", ylim=c(0,1))
         abline(lm(z$Adj_R2 ~ z$Density), col="red")
         #lines(lowess(z$Intactness, z$R2), col="blue")
     })
@@ -329,7 +345,9 @@ server = function(input, output) {
         b1 = a1[seq(1,length(a1),2)]
         z = mutate(z, b_cmi = as.numeric(b1))
         bp1 = ggplot(z, aes(x=Ecozone, y=b_cmi)) + geom_boxplot(aes(group=Ecozone))
-        bp1 + ggtitle("CMI effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1)
+        bp1 + ggtitle("CMI effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1) +
+        theme(plot.title = element_text(size=18), legend.title=element_text(size=18), legend.text=element_text(size=15),
+        axis.title.x = element_text(size=15), axis.title.y = element_text(size=15))
     })
 
     output$plot5 <- renderPlot({
@@ -338,7 +356,9 @@ server = function(input, output) {
         b2 = a2[seq(1,length(a2),2)]
         z = mutate(z, b_gpp = as.numeric(b2))
         bp2 = ggplot(z, aes(x=Ecozone, y=b_gpp)) + geom_boxplot(aes(group=Ecozone))
-        bp2 + ggtitle("GPP effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1)
+        bp2 + ggtitle("GPP effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1) +
+        theme(plot.title = element_text(size=18), legend.title=element_text(size=18), legend.text=element_text(size=15),
+        axis.title.x = element_text(size=15), axis.title.y = element_text(size=15))
     })
 
     output$plot6 <- renderPlot({
@@ -347,7 +367,9 @@ server = function(input, output) {
         b3 = a3[seq(1,length(a3),2)]
         z = mutate(z, b_led = as.numeric(b3))
         bp3 = ggplot(z, aes(x=Ecozone, y=b_led)) + geom_boxplot(aes(group=Ecozone))
-        bp3 + ggtitle("LED effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1)
+        bp3 + ggtitle("LED effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1) +
+        theme(plot.title = element_text(size=18), legend.title=element_text(size=18), legend.text=element_text(size=15),
+        axis.title.x = element_text(size=15), axis.title.y = element_text(size=15))
     })
 
     output$plot7 <- renderPlot({
@@ -356,7 +378,9 @@ server = function(input, output) {
         b4 = a4[seq(1,length(a4),2)]
         z = mutate(z, b_lcc = as.numeric(b4))
         bp4 = ggplot(z, aes(x=Ecozone, y=b_lcc)) + geom_boxplot(aes(group=Ecozone))
-        bp4 + ggtitle("LCC effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1)
+        bp4 + ggtitle("LCC effect size by ecozone") + geom_hline(yintercept=0, colour="blue", linetype="dashed", size=1) +
+        theme(plot.title = element_text(size=18), legend.title=element_text(size=18), legend.text=element_text(size=15),
+        axis.title.x = element_text(size=15), axis.title.y = element_text(size=15))
     })
 
     output$downloadData <- downloadHandler(
@@ -374,19 +398,25 @@ server = function(input, output) {
     )
 
     output$ecormap <- renderLeaflet({
+        #r = raster(paste0("maps/",input$species,".tif"))
+        #if (input$species %in% songbirds) {
+        #    rr = raster(paste0("maps/",input$species,"_range.tif"))
+        #    r = r * rr
+        #}
         z = testdata() %>% mutate(Ecoregion=as.numeric(Ecoregion), Species=as.numeric(Adj_R2))
         ecor_maps = left_join(ecor_maps, z, by=c("ecoreg"="Ecoregion"))
         i = ecor_maps[["Species"]]
         bins <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
-        pal <- colorBin("YlOrRd", domain = i, bins = bins) #, na.color = "transparent")
+        pal <- colorBin("YlOrRd", domain = i, bins = bins, na.color = "transparent")
         ecoPopup = paste0("Ecozone: ",ecor_maps$ecozone,"<br>Ecoregion: ",ecor_maps$ecoreg,"<br>Networks: ",ecor_maps$nets,"<br>CMI: ",ecor_maps[["CMI"]],"<br>GPP: ",ecor_maps[["GPP"]],"<br>LED: ",ecor_maps[["LED"]],"<br>LCC: ",ecor_maps[["LCC"]],"<br>Adjusted R2: ",ecor_maps[["Species"]],"<br>RMSE: ",ecor_maps[["RMSE"]])
         leaflet(ecor_maps) %>%
             addProviderTiles("Esri.NatGeoWorldMap", "Esri.NatGeoWorldMap") %>%
             addPolygons(data=ecor_maps, fillColor = ~pal(unlist(i)), fill=T, weight=1, color="black", fillOpacity=1, group="Ecoregions", popup=ecoPopup) %>%
             addPolygons(data=ecoz_maps, fill=F, weight=3, color="black", group="Ecozones") %>%
+            #addRasterImage(r, opacity=1, group=input$species) %>%
             addLayersControl(position = "topright",
             baseGroups=c("Esri.NatGeoWorldMap"),
-            overlayGroups = c("Ecozones","Ecoregions"),
+            overlayGroups = c("Ecozones","Ecoregions"), #input$species),
             options = layersControlOptions(collapsed = FALSE)) %>%
             hideGroup(c("Ecozones")) %>%
             addLegend(pal = pal, values = ~i, opacity = 0.7, title = "Adjusted R2",
