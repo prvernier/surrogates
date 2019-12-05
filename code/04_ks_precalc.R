@@ -109,15 +109,18 @@ library(tidyverse)
 ecostats = read_csv('output/tables/ecoregion_statistics.csv') %>% mutate(
     blbw=NULL,boch=NULL,brcr=NULL,btnw=NULL,cawa=NULL,cmwa=NULL,osfl=NULL,pigr=NULL,rubl=NULL,swth=NULL,wwcr=NULL,
     caribou=NULL,AllBirds=NULL,ForestBirds=NULL,AllWaterfowl=NULL,CavityNesters=NULL,GroundNesters=NULL,OverwaterNesters=NULL,
-    AllBirds_dens=NULL,ForestBirds_dens=NULL,AllWaterfowl_dens=NULL,CavityNesters_dens=NULL,GroundNesters_dens=NULL,OverwaterNesters_dens=NULL)
+    AllBirds_dens=NULL,ForestBirds_dens=NULL,AllWaterfowl_dens=NULL,CavityNesters_dens=NULL,GroundNesters_dens=NULL,OverwaterNesters_dens=NULL,
+    AllBirds_cv=NULL,ForestBirds_cv=NULL,AllWaterfowl_cv=NULL,CavityNesters_cv=NULL,GroundNesters_cv=NULL,OverwaterNesters_cv=NULL)
 
 mdr = read_csv('code/input/pan_eco_mdr_v4.csv') %>% select(ecoregion, mdr2)
 ecostats = left_join(ecostats, mdr) %>% mutate(mdr=mdr2, mdr2=NULL)
-dens = read_csv('code/input/species_stats18.csv') %>% dplyr::select(ecoregion, species, mean)
+dens = read_csv('code/input/species_stats18.csv') %>% dplyr::select(ecoregion, species, mean, std_dev)
 for (i in unique(dens$species)) {
     ecostats[paste0(tolower(i),'_dens')] = 0
+    ecostats[paste0(tolower(i),'_cv')] = 0
     for (j in unique(dens$ecoregion)) {
         ecostats[[paste0(tolower(i),"_dens")]][ecostats$ecoregion==j] = dens$mean[dens$ecoregion==j & dens$species==i]
+        ecostats[[paste0(tolower(i),"_cv")]][ecostats$ecoregion==j] = round(dens$std_dev[dens$ecoregion==j & dens$species==i]/dens$mean[dens$ecoregion==j & dens$species==i]*100,1)
     }
 }
 

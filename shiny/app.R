@@ -14,7 +14,7 @@ load("ks.Rdata")
 songbirds = c('BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR')
 waterfowl = c('ALLBIRDS','FORESTBIRDS','ALLWATERFOWL','CAVITYNESTERS','GROUNDNESTERS','OVERWATERNESTERS')
 ks = mutate(ks, ecozone=as.character(substr(ecozone,2,nchar(ecozone))))
-zone = select(ks, ecozone, ecoregion, intactness, mdr, paste0(tolower(songbirds),"_dens"), caribou_dens, paste0(tolower(waterfowl),"_dens")) %>% unique()
+zone = select(ks, ecozone, ecoregion, intactness, mdr, paste0(tolower(songbirds),"_dens"), caribou_dens, paste0(tolower(waterfowl),"_dens"), paste0(tolower(songbirds),"_cv"), caribou_cv, paste0(tolower(waterfowl),"_cv")) %>% unique()
 
 ui = fluidPage(
 	
@@ -76,7 +76,8 @@ ui = fluidPage(
                   column(6,plotOutput(outputId="plot3", width="500px",height="400px")),
                   column(6,plotOutput(outputId="plot2a", width="500px",height="400px")),  
                   column(6,plotOutput(outputId="plot2b", width="500px",height="400px")),
-                  column(6,plotOutput(outputId="plot2c", width="500px",height="400px"))  
+                  column(6,plotOutput(outputId="plot2c", width="500px",height="400px")), 
+                  column(6,plotOutput(outputId="plot2d", width="500px",height="400px"))  
                 )
                 )
             )
@@ -97,7 +98,7 @@ server = function(input, output) {
         
         # create empty summary table
         z = tibble(Ecozone=as.character(), Ecoregion=as.character(), Networks=as.integer(), 
-            Intactness=as.numeric(), MDR=as.integer(), Density=as.numeric(),
+            Intactness=as.numeric(), MDR=as.integer(), Density=as.numeric(), Density_CV=as.numeric(),
             CMI=as.character(), GPP=as.character(), LED=as.character(), LCC=as.character(), 
             Adj_R2 = as.numeric(), RMSE = as.numeric())
         i = 1
@@ -150,6 +151,7 @@ server = function(input, output) {
                 z[i,"Intactness"] = zone$intactness[zone$ecoregion==eco]
                 z[i,"MDR"] = zone$mdr[zone$ecoregion==eco]
                 z[i,"Density"] = zone[[paste0(tolower(input$species),"_dens")]][zone$ecoregion==eco]
+                z[i,"Density_CV"] = zone[[paste0(tolower(input$species),"_cv")]][zone$ecoregion==eco]
                 z[i,"Networks"] = paste0(nrow(x)," (",rnet1,",",rnet0,")") 
                 #z[i,"Networks1"] = rnet1 #paste0(nrow(x)," (",rnet1,",",rnet0,")") 
                 #z[i,"Networks0"] = rnet0 #paste0(nrow(x)," (",rnet1,",",rnet0,")") 
@@ -195,6 +197,7 @@ server = function(input, output) {
             z[i,"Intactness"] = ""
             z[i,"MDR"] = ""
             z[i,"Density"] = ""
+            z[i,"Density_CV"] = ""
             z[i,"CMI"] = "" # paste0(sprintf("%.3f",sum_cmi/(i-1))," (",sprintf("%.2f",sum_cmi_vi/(i-1)),")")
             z[i,"GPP"] = "" # paste0(sprintf("%.3f",sum_gpp/(i-1))," (",sprintf("%.2f",sum_gpp_vi/(i-1)),")")
             z[i,"LED"] = "" # paste0(sprintf("%.3f",sum_led/(i-1))," (",sprintf("%.2f",sum_led_vi/(i-1)),")")
@@ -324,6 +327,22 @@ server = function(input, output) {
         }
         plot(z$Density, z$Adj_R2, main=paste0("Adjusted R2 and ",x_lab," (R2 = ",r2c,")"), xlab=x_lab, ylab="Adjusted R2", ylim=c(0,1))
         abline(lm(z$Adj_R2 ~ z$Density), col="red")
+        #lines(lowess(z$Intactness, z$R2), col="blue")
+    })
+
+    output$plot2d <- renderPlot({
+        z = testdata()
+        #p <- ggplot(z, aes(Density, Adj_R2)) + geom_point() + geom_smooth(method=lm)
+        #p
+        m2d = lm(Adj_R2 ~ Density_CV, data=z)
+        r2d = sprintf("%.3f",summary(m2d)$adj.r.squared)
+        if (input$species=="CARIBOU") {
+            x_lab = "Habitat Quality CV"
+        } else {
+            x_lab = "Density CV"
+        }
+        plot(z$Density_CV, z$Adj_R2, main=paste0("Adjusted R2 and ",x_lab," (R2 = ",r2d,")"), xlab=x_lab, ylab="Adjusted R2", ylim=c(0,1))
+        abline(lm(z$Adj_R2 ~ z$Density_CV), col="red")
         #lines(lowess(z$Intactness, z$R2), col="blue")
     })
 
