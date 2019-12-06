@@ -1,6 +1,6 @@
 # Surrogates Paper
 
-Revised: 2019-11-14
+Revised: 2019-12-06
 
 Evaluating the Effectiveness of Biodiversity Surrogates
 
@@ -14,13 +14,19 @@ In this study we develop 662 multiple linear regression models between test spec
 
   1. Install R
   2. Install the following additional packages:
+
     >install.packages(c("sf","DT","caret","shiny","leaflet","tidyverse"))
   3. Start the Shiny app:
+
+    >library(shiny)
     >runGitHub( "prvernier/surrogates", subdir="shiny")
 
 ## Supporting Information
 
-* [Appendix S1. Bird species common and latin names](https://github.com/prvernier/surrogates/blob/master/supp_info/bird_species.md)
-* [Appendix S2. Using R to evaluating the effectiveness of surrogates in ecoregion 89*](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp_info/eco89.html)
+* [Table S1. Bird species common and latin names](https://github.com/prvernier/surrogates/blob/master/supp_info/table_s1.md)
+* [Table S2. Summary of multiple linear regression models relating surrogates KS values to species KS values for all ecoregions with representative and non-representative networks in the boreal region of Canada.](https://github.com/prvernier/surrogates/blob/master/supp_info/table_s2.md)
+* [Appendix S2. Using R to evaluating the effectiveness of surrogates in ecoregion 89 (Rmarkdown)](demo_evaluating_surrogates.Rmd)
+* [Appendix S2. Using R to evaluating the effectiveness of surrogates in ecoregion 89 (html)](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp_info/demo_evaluating_surrogates.html)
 
-*If Appendix S2 does not render properly, just download the html file (or GitHub project) and open it on your local machine.
+
+
