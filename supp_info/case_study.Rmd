@@ -6,9 +6,6 @@ output:
   html_document:
     keep_md: false
     code_folding: hide
-    toc: true
-    toc_float:
-      collapsed: false
     css: styles.css
 ---
 
