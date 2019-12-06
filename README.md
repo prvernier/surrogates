@@ -25,7 +25,7 @@ In this study we develop 662 multiple linear regression models between test spec
 
 * [Table S1. Bird species common and latin names](https://github.com/prvernier/surrogates/blob/master/supp_info/table_s1.md)
 * [Table S2. Summary of multiple linear regression models relating surrogates KS values to species KS values for all ecoregions with representative and non-representative networks in the boreal region of Canada.](https://github.com/prvernier/surrogates/blob/master/supp_info/table_s2.md)
-* [Appendix S2. Using R to evaluating the effectiveness of surrogates in ecoregion 89 (Rmarkdown)](demo_evaluating_surrogates.Rmd)
+* [Appendix S2. Using R to evaluating the effectiveness of surrogates in ecoregion 89 (Rmarkdown)](supp_info/demo_evaluating_surrogates.Rmd)
 * [Appendix S2. Using R to evaluating the effectiveness of surrogates in ecoregion 89 (html)](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp_info/demo_evaluating_surrogates.html)
 
 
