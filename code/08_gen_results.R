@@ -1,4 +1,4 @@
-# Create tables and figures for results section of manuscript
+# Create tables for results section of manuscript
 # PV 2019-09-24
 
 library(tidyverse)
