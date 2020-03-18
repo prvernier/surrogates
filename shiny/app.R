@@ -2,7 +2,7 @@ library(sf)
 library(DT)
 library(caret)
 library(shiny)
-#library(raster)
+library(raster)
 library(leaflet)
 library(tidyverse)
 
@@ -14,7 +14,7 @@ load("ks.Rdata")
 songbirds = c('BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR')
 waterfowl = c('ALLBIRDS','FORESTBIRDS','ALLWATERFOWL','CAVITYNESTERS','GROUNDNESTERS','OVERWATERNESTERS')
 ks = mutate(ks, ecozone=as.character(substr(ecozone,2,nchar(ecozone))))
-zone = select(ks, ecozone, ecoregion, intactness, mdr, paste0(tolower(songbirds),"_dens"), caribou_dens, paste0(tolower(waterfowl),"_dens"), paste0(tolower(songbirds),"_cv"), caribou_cv, paste0(tolower(waterfowl),"_cv")) %>% unique()
+zone = dplyr::select(ks, ecozone, ecoregion, intactness, mdr, paste0(tolower(songbirds),"_dens"), caribou_dens, paste0(tolower(waterfowl),"_dens"), paste0(tolower(songbirds),"_cv"), caribou_cv, paste0(tolower(waterfowl),"_cv")) %>% unique()
 
 ui = fluidPage(
 	
@@ -28,6 +28,8 @@ ui = fluidPage(
 				choices = c("CARIBOU",songbirds,'ALLBIRDS','FORESTBIRDS','ALLWATERFOWL','CAVITYNESTERS','GROUNDNESTERS','OVERWATERNESTERS'),
 				selected = "CAWA"),
             checkboxInput("ave", "Show averages at bottom of table", FALSE),
+            checkboxInput("nets", "Show only ecoregions with networks", FALSE),
+            checkboxInput("opa", "Make ecoregion layer transparent", FALSE),
             #hr(),
             #selectInput(inputId = "factors",
 			#	label = "Select confounding factor:",
@@ -417,27 +419,38 @@ server = function(input, output) {
     )
 
     output$ecormap <- renderLeaflet({
-        #r = raster(paste0("maps/",input$species,".tif"))
-        #if (input$species %in% songbirds) {
-        #    rr = raster(paste0("maps/",input$species,"_range.tif"))
-        #    r = r * rr
-        #}
+        if (input$species %in% songbirds) {
+            r = raster(paste0("maps/",input$species,"_range.tif"))
+        } else {
+            r = raster(paste0("maps/",input$species,".tif"))
+        }
+        if (input$opa==FALSE) {
+            eco_opa=1
+        } else {
+            eco_opa=0
+        }
         z = testdata() %>% mutate(Ecoregion=as.numeric(Ecoregion), Species=as.numeric(Adj_R2))
-        ecor_maps = left_join(ecor_maps, z, by=c("ecoreg"="Ecoregion"))
+        if (input$nets==FALSE) {
+            ecor_maps = left_join(ecor_maps, z, by=c("ecoreg"="Ecoregion"))
+        } else {
+            ecor_maps = right_join(ecor_maps, z, by=c("ecoreg"="Ecoregion"))
+        }
         i = ecor_maps[["Species"]]
         bins <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
         pal <- colorBin("YlOrRd", domain = i, bins = bins, na.color = "transparent")
+        pal2 <- colorNumeric(c('#ffffe5','#f7fcb9','#d9f0a3','#addd8e','#78c679','#41ab5d','#238443','#006837','#004529'), values(r), na.color = "transparent")
         ecoPopup = paste0("Ecozone: ",ecor_maps$ecozone,"<br>Ecoregion: ",ecor_maps$ecoreg,"<br>Networks: ",ecor_maps$nets,"<br>CMI: ",ecor_maps[["CMI"]],"<br>GPP: ",ecor_maps[["GPP"]],"<br>LED: ",ecor_maps[["LED"]],"<br>LCC: ",ecor_maps[["LCC"]],"<br>Adjusted R2: ",ecor_maps[["Species"]],"<br>RMSE: ",ecor_maps[["RMSE"]])
         leaflet(ecor_maps) %>%
-            addProviderTiles("Esri.NatGeoWorldMap", "Esri.NatGeoWorldMap") %>%
-            addPolygons(data=ecor_maps, fillColor = ~pal(unlist(i)), fill=T, weight=1, color="black", fillOpacity=1, group="Ecoregions", popup=ecoPopup) %>%
+            addProviderTiles("Esri.NatGeoWorldMap", "World Map") %>%
+            addRasterImage(r, col=pal2, opacity=1, group=input$species) %>%
+            addLegend(pal=pal2, values(r), position=c("bottomleft"), title="Density", opacity=0.8) %>%
+            addPolygons(data=ecor_maps, fillColor = ~pal(unlist(i)), fill=T, weight=1, color="black", fillOpacity=eco_opa, group="Ecoregions", popup=ecoPopup) %>%
             addPolygons(data=ecoz_maps, fill=F, weight=3, color="black", group="Ecozones") %>%
-            #addRasterImage(r, opacity=1, group=input$species) %>%
             addLayersControl(position = "topright",
-            baseGroups=c("Esri.NatGeoWorldMap"),
-            overlayGroups = c("Ecozones","Ecoregions"), #input$species),
+            baseGroups=c("World Map"),
+            overlayGroups = c(input$species,"Ecozones","Ecoregions"),
             options = layersControlOptions(collapsed = FALSE)) %>%
-            hideGroup(c("Ecozones")) %>%
+            hideGroup(c("Ecozones",input$species)) %>%
             addLegend(pal = pal, values = ~i, opacity = 0.7, title = "Adjusted R2",
                 position = "bottomright")
     })
