@@ -1,5 +1,6 @@
 archive/
-**/code/*
+code/**
+code/output/**
 data/
 docs/
 references/
