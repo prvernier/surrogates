@@ -1,6 +1,6 @@
 # Surrogates Paper
 
-Revised: 2020-02-02
+Revised: 2020-04-07
 
 Evaluating the Effectiveness of Biodiversity Surrogates
 
