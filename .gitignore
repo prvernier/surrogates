@@ -1,6 +1,5 @@
 archive/
-code/*
-code/output/ecoregions/
+code/
 data/
 docs/
 references/
