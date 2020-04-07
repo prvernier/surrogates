@@ -1,11 +1,12 @@
 archive/
+code/
 code/analysis/
 code/backup/
 code/figs/
 code/figures_samples/
 code/figures_shiny/
 code/input/
-code/ouput/
+code/output/
 data/
 docs/
 references/
