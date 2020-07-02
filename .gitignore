@@ -1,7 +1,9 @@
 archive/
-code/**
+code/
 data/
 docs/
+manuscript/
 references/
 shiny_old/
 Rgui.lnk
+upload.R
