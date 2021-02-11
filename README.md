@@ -41,6 +41,7 @@ The following scripts can be used to replicate the analysis. Required datasets a
 
   * 00_check_spp.R
     - Check to make sure we have all the proper scientific names and make modifications where needed
+    - Requires BOTW.gdb from http://datazone.birdlife.org/species/requestdis
   
   * 01_gen_data.R
     - Generate caribou and bird raster maps for analysis with common projection etc.
