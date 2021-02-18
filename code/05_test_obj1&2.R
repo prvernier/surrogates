@@ -4,13 +4,13 @@
   # Use representative and non-representative networks
   # Use t-test or wilcox.test (t-test should be fine due to large sample sizes)
   # Calculate effect size = (mean of DMrep) – (mean of DMnonrep) / std dev of DM
-# PV 2020-08-26
+# PV 2021-02-16
 
 library(tidyverse)
 library(broom)
 library(effectsize)
 
-x = read_csv('input/eco_bcr_data.csv')
+x = read_csv('output/eco_bcr_data.csv')
 
 # Bird assemblages by BCR
 gz1 = gather(x, species, dissim, allbirds:overwaternesters) %>% #, factor_key=TRUE)

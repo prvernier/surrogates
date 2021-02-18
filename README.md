@@ -1,6 +1,6 @@
 # Surrogates Paper
 
-Revised: 2021-02-10
+Revised: 2021-02-16
 
 
 Evaluating the Effectiveness of Biodiversity Surrogates
@@ -53,14 +53,18 @@ The following scripts can be used to replicate the analysis. Required datasets a
     - Calculate KS statistic for representative and non-representative networks for all ecoregions and species groups
     - Originally used velox package, which is no longer maintained; changed to exact_extracr package
 
-  * 03_merge_data.R
+  * 03_merge_ecor.R
+    - Prepare data for statistical analysis
+    - Merge ecoregion-level data containing dissimilarity metrics for species and surrogates
+
+  * 04_merge_ecoz.R
     - Prepare data for statistical analysis
     - Merge ecozone-level data containing dissimilarity metrics for species and surrogates
     - For each ecozone, randomly select up to 500 representative and non-representative networks
 
 ### Test hypotheses
 
-  * 03_test_obj1&2.R
+  * 05_test_obj1&2.R
     - Obj1: Are networks representative of surrogates also representative of non-target species?
        - Use representative networks only
     - Obj2: Are representative networks more effective than non-representative networks for target species?
@@ -68,14 +72,18 @@ The following scripts can be used to replicate the analysis. Required datasets a
       - Use t-test or wilcox.test (t-test should be fine due to large sample sizes)
       - Calculate effect size = (mean of DMrep) – (mean of DMnonrep) / std dev of DM
     
-  * 04_test_obj3.R
+  * 06_test_obj3.R
     - Obj3: Does the relative importance of environmental surrogates vary by groups of species?
       - Use representative networks only
       - Model species DM as a function of CMI + GPP + LED + LCC
       - Count number of times each surrogate is the most important variable
 
-  *  05_test_obj4.R
+  *  07_test_obj4.R
     - Obj4: Is the relationship between surrogates and non-target species influenced by other variables?
       - Test ecoregion membership, intactness, MDR size, density, and density CV
       - Calculate AIC for model with and without covariate
       - Use representative networks only
+
+### Create tables and figures
+
+  * results_table3.R

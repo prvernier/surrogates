@@ -1,7 +1,7 @@
 # Prepare data for statistical analysis
 # Merge ecozone-level data containing dissimilarity metrics for species and surrogates
 # For each ecozone, randomly select up to 500 representative and non-representative networks
-# PV 2020-07-31
+# PV 2021-02-16
 
 library(tidyverse)
 library(broom)
@@ -9,7 +9,7 @@ library(broom)
 # First, bind ecozone-level tables and randomly select appropriate samples from rep and nonrep networks
 set.seed(20191021)
 for(i in c('4','5','6A','6B','9','11','12','14','15')) {
-    x = read_csv(paste0('input/ecozones/ecoz_',i,'_nets_spp_ks.csv')) %>%
+    x = read_csv(paste0('output/ecozones/ecoz_',i,'_nets_spp_ks.csv')) %>%
         mutate(ecozone=i)
     for (j in unique(x$ecoregion)) {
         xx = filter(x, ecoregion==j & (rep==0 | rep==1))
@@ -47,7 +47,7 @@ z = mutate(z, surrogates=(ks_cmi+ks_gpp+ks_led+bc_lcc)/4,
     ecozone = factor(ecozone, levels=c('4','5','6A','6B','9','11','12','14','15')),
     bcr = recode(ecozone, `4`="BCR6", `5`="BCR7", `6A`="BCR8", `6B`="BCR8",
         `9`="BCR6", `11`="BCR4", `12`="BCR4", `14`="BCR10", `15`="BCR7"))
-y = read_csv('input/ecoregion_data.csv')
+y = read_csv('code/input/ecoregion_data.csv')
 zout = left_join(z, y)
 names(zout) = tolower(names(zout))
-write_csv(zout, 'input/eco_bcr_data.csv')
+write_csv(zout, 'output/eco_bcr_data.csv')

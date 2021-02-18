@@ -2,13 +2,13 @@
 #   Test ecoregion membership, intactness, MDR size, density, and density CV
 #   Calculate AIC for model with and without covariate
 #   Use representative networks only
-# PV 2020-09-04
+# PV 2021-02-16
 
 library(tidyverse)
 library(broom)
 
 # Bird assemblages by BCR
-x = read_csv('input/eco_bcr_data.csv')
+x = read_csv('output/eco_bcr_data.csv')
 y1a = gather(x, species, density, c(allbirds_dens,forestbirds_dens,allwaterfowl_dens,cavitynesters_dens,groundnesters_dens,overwaternesters_dens,coniferbirds_dens,deciduousbirds_dens,mixedwoodbirds_dens,grasslandbirds_dens,neomigrantbirds_dens,shortmigrantbirds_dens,nomadicbirds_dens,residentbirds_dens,decliningbirds_dens,lowconcernbirds_dens)) %>%
     filter(!bcr=="BCR10" & rep==1) %>%
     mutate(id=1:227824) %>%

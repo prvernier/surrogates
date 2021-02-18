@@ -2,12 +2,12 @@
 #   Use representative networks only
 #   Model species DM as a function of CMI + GPP + LED + LCC
 #   Count number of times each surrogate is the most important variable
-# PV 2020-08-31
+# PV 2021-02-16
 
 library(tidyverse)
 library(broom)
 
-x = read_csv('input/eco_bcr_data.csv')
+x = read_csv('code/input/eco_bcr_data.csv')
 
 # Bird assemblages by BCR
 y1a = gather(x, species, dissim, allbirds:overwaternesters) %>%

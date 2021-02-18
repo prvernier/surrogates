@@ -1,12 +1,12 @@
 # Merge eco_xxx_nets_spp_ks files by ecozone
-# PV 2020-08-25
+# PV 2021-02-16
 
 library(sf)
 library(tidyverse)
 
 pba_nwb_birds = c('blbw','boch','brcr','btnw','cawa','cmwa','osfl','pigr','rubl','swth','wwcr')
 spp_to_use = c('AllBirds','ForestBirds','ConiferBirds','DeciduousBirds','MixedwoodBirds','GrasslandBirds','NeoMigrantBirds','ShortMigrantBirds','NomadicBirds','ResidentBirds','DecliningBirds','LowConcernBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters',pba_nwb_birds)
-pba = read_csv('input/pan_eco_mdr_v4.csv')
+pba = read_csv('code/input/pan_eco_mdr_v4.csv')
 ecozones = c("4","5","6A","6B","9","11","12","14","15")
 
 z = 1
@@ -16,8 +16,8 @@ for (ecoz in ecozones) {
     ecoregions = filter(pba, ecozone==ecoz) %>% pull(ecoregion) %>% sort()
     i = 1
     for (eco in ecoregions) {
-        if(file.exists(paste0('input/ecoregions/eco_',eco,'_nets_spp_ks.csv'))) {
-            x = read_csv(paste0('input/ecoregions/eco_',eco,'_nets_spp_ks.csv'))
+        if(file.exists(paste0('output/ecoregions/eco_',eco,'_nets_spp_ks.csv'))) {
+            x = read_csv(paste0('output/ecoregions/eco_',eco,'_nets_spp_ks.csv'))
             #x = dplyr::select(x, 1:5 , spp_to_use)
             x = x%>% mutate(ecoregion=eco)
             x$ecoprovince=pba$ecoprovince[pba$ecoregion==eco]
@@ -29,7 +29,7 @@ for (ecoz in ecozones) {
             i = i + 1
         }
     }
-    write_csv(xx, paste0('input/ecozones/ecoz_',ecoz,'_nets_spp_ks.csv'))
+    write_csv(xx, paste0('output/ecozones/ecoz_',ecoz,'_nets_spp_ks.csv'))
     xx$ecozone=ecoz
     if (z==1) {
         zz = xx
