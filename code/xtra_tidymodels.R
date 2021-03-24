@@ -2,7 +2,7 @@ library(tidyverse)
 library(tidymodels)
 
 set.seed(9093)
-z = read_csv('input/bcr4_deciduousbirds.csv')
+z = read_csv('code/input/bcr4_deciduousbirds.csv')
 preds <- c("ks_cmi", "ks_gpp", "ks_led", "bc_lcc")
 data_split <- initial_split(z, strata = "rep", p = 0.75)
 spp_train <- training(data_split)

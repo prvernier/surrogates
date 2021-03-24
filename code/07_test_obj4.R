@@ -33,6 +33,12 @@ y2 = y1 %>%
         dens_cv = if_else(AIC0 < AIC(lm(dissim ~ ks_cmi + ks_gpp + ks_led + bc_lcc + dens_cv)), 1, 0)) %>%
         mutate(AIC0=NULL)
 write_csv(y2, 'output/obj4_bcr_birds.csv')
+b = read_csv('output/obj4_bcr_birds.csv') %>%
+    group_by(species) %>%
+    summarize(Ecoregion=sum(ecoregion), MDR=sum(mdr), Intactness=sum(intactness), Density=sum(density), Density_CV=sum(dens_cv))
+bb = mutate(b, id = c(1,13,14,5,6,3,2,8,15,4,7,9,11,16,12,10)) %>%
+    arrange(id) %>% mutate(id=NULL)
+write_csv(bb, 'output/table4_birds.csv')
 
 # Bird assemblages by BCR - full results
 y2b = y1 %>%
@@ -43,6 +49,7 @@ y2b = y1 %>%
         density = AIC(lm(dissim ~ ks_cmi + ks_gpp + ks_led + bc_lcc + density)),
         dens_cv = AIC(lm(dissim ~ ks_cmi + ks_gpp + ks_led + bc_lcc + dens_cv)))
 write_csv(y2b, 'output/obj4_bcr_birds_full_output.csv')
+
 
 # Caribou by BCR
 eco_list = c(51,52,53,55,59,60,62,68,69,70,71,72,74,77,78,80,87,88,89,90,94,95,100,103,104,105,136,215,216,217)
