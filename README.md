@@ -11,13 +11,10 @@ Evaluating the Effectiveness of Biodiversity Surrogates
 Beacons et al. <i>in prep</i>. Evaluating the Effectiveness of Biodiversity Surrogates for Conservation Planning in the Boreal Region of Canada.
 
 
-## Supporting information
+## Case studies
 
-* [Appendix S1 and S2. Construction and filtering of benchmark networks.](https://github.com/prvernier/surrogates/blob/master/supp/appendix_s1s2.md)
-* [Table S1. Bird species common and latin names](https://github.com/prvernier/surrogates/blob/master/supp/table_s1.md)
-* [Table S2. Summary of multiple linear regression models relating surrogates KS values to species KS values for all ecoregions with representative and non-representative networks in the boreal region of Canada.](https://github.com/prvernier/surrogates/blob/master/supp/table_s2.md)
-* [Case study: Evaluating the effectiveness of surrogates (ecoregion 89) ([Rmarkdown](supp/case_study_89.Rmd) or [HTML](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_89.html))
-* [Case study: Evaluating the effectiveness of surrogates (ecoregion 181) ([Rmarkdown](supp/case_study_181.Rmd) or [HTML](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_181.html))
+* [Ecoregion 89 case study: Evaluating the effectiveness of surrogates ([Rmarkdown](supp/case_study_89.Rmd) or [HTML](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_89.html))
+* [Ecoregion 181 case study: Evaluating the effectiveness of surrogates ([Rmarkdown](supp/case_study_181.Rmd) or [HTML](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_181.html))
 
 
 ## Code
