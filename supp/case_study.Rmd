@@ -1,7 +1,7 @@
 ---
 title: "Case Study: Evaluating the effectiveness of surrogates"
-date: "`r format(Sys.time(), '%d %B %Y')`"
-author: "Pierre Vernier"
+#date: "`r format(Sys.time(), '%d %B %Y')`"
+#author: "Pierre Vernier"
 output:
   html_document:
     keep_md: false
@@ -25,7 +25,7 @@ In this vignette, we illustrate the basic steps for evaluating the effectiveness
 
 We first need to import some libraries for reading and analysing raster and vector data, and three functions for calculating dissimilarity and representation metrics: *calcBC* for calculating the Bray-Curtis metric for categorical data, *calcKS* for calculating the Kolmogorov-Smirnov statistic for continuous data, and *calcRI* for calculating the representation index for continuous data. The functions are in the main folder but you will need to install the packages using the "install.packages" function i.e., install.packages("sf", "raster", "tmap", "tidyverse").
 
-```{r, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(sf)
 library(raster)
 library(tmap)
@@ -48,7 +48,7 @@ We can now read the data into R. The study area consists of the ecoregion plus i
   * MixedwoodBirds.tif - Density raster of bird species associated with mixedwood forests
   * GrasslandBirds.tif - Density raster of bird species associated with grasslands
 
-```{r, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 eco = st_read(paste0("eco",params$eco,"/eco.shp"), quiet=T) %>% 
     mutate(legend="Ecoregion")
 fda = st_read(paste0("eco",params$eco,"/fda.shp"), quiet=T) %>%
@@ -88,7 +88,7 @@ r4_max = round(cellStats(r4, max),1)
 
 The following map shows the location of ecoregion (grey) in the boreal region along with the extent of the intersecting watersheds (black outline), existing protected areas (green), and the sample network (red) comprising of 3 ecological benchmarks.
 
-```{r message=FALSE, warning=FALSE, out.width='100%'}
+```{r echo=FALSE, message=FALSE, warning=FALSE, out.width='100%'}
 osmtiles <- tmaptools::read_osm(fda, type="esri")
 tm_shape(osmtiles) + tm_rgb() +
     tm_shape(eco) + tm_polygons(col="legend", title="", pal="#1D1D1D", alpha=0.5) + 
@@ -170,7 +170,7 @@ print(tmap_arrange(tm1, tm2, tm3, tm4))
 ***
 In step 6, we calculate representation for biophysical surrogates and test features using dissimilarity metrics. We use the KS statistic for continuous maps and the Bray-Curtis metric for categorical data (land cover). We then summarize the results in a table. No statistical analysis can be performed in this example since we only calculated representativeness for one network in one ecoregion. In the full analysis (see Paper) we evaluated 17 test features across 30 ecoregions (grouped into 4 BCRs), with each ecoregion containing upwards of several thousand networks.
 
-```{r, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 ks1 = calcKS(stack(cmi,gpp,led), eco, net)
 bc1 = calcBC(lcc, eco, net)
 ks2 = calcKS(stack(r1,r2,r3,r4), eco, net)
@@ -195,7 +195,7 @@ In the representation analysis, we want to evaluate the representation of the sa
 
 In step 7, we calculate the representation index for test features using the ratio of the proportion of test features in a network to the proportion of the network in the planning region (see "Relationship between species and surrogates" in the Methods section). The table below provides the results using the representation index for the same network and species.
 
-```{r, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 fda_dslv <- st_union(fda) # for RI, use the FDA boundary as reference area
 ri1 = calcRI(stack(r1,r2,r3,r4), fda_dslv, net)
 ri1v = unlist(ri1[2:5])
