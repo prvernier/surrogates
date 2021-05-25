@@ -96,10 +96,10 @@ for (eco in ecoList) {
         x_nonrep = mutate(x_nonrep, rep=0)
         x = bind_rows(x_rep, x_nonrep)
         #write_csv(x, paste0("output/ecoregions/eco_",eco,"_nets_spp_ks.csv"))
-        write_csv(x, paste0("output/ecoregions_by_spp/eco_",eco,"_nets_spp_ks_by_spp.csv"))
+        write_csv(x, paste0('output/ecoregions_by_spp/eco_',eco,'_nets_spp_ks_by_spp.csv'))
 
         # Combine songbirds into assemblages
-        z = select(x, network, ks_cmi, ks_gpp, ks_led, bc_lcc, Caribou, AllWaterfowl, CavityNesters, GroundNesters, OverwaterNesters, rep)
+        z = select(x, network, ks_cmi, ks_gpp, ks_led, bc_lcc, BLBW, BOCH, BRCR, BTNW, CAWA, CMWA, OSFL, PIGR, RUBL, SWTH, WWCR, Caribou, AllWaterfowl, CavityNesters, GroundNesters, OverwaterNesters, rep)
         y = select(x, sppCodes) %>% rowMeans(na.rm=TRUE)
         z = mutate(z, AllBirds=round(y,3))
         subCodes = filter(guilds, forest==1) %>% pull(Code)
@@ -136,8 +136,8 @@ for (eco in ecoList) {
         y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
         z = mutate(z, ResidentBirds=round(y,3))
 
-        zz = z[,c('network','ks_cmi','ks_gpp','ks_led','bc_lcc','Caribou','AllBirds','ForestBirds','ConiferBirds','DeciduousBirds','MixedwoodBirds','GrasslandBirds','NeoMigrantBirds','ShortMigrantBirds','NomadicBirds','ResidentBirds','DecliningBirds','LowConcernBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters','rep')]
-        write_csv(zz, paste0("output/ecoregions_by_spp/eco_",eco,"_nets_spp_ks.csv"))
+        zz = z[,c('network','ks_cmi','ks_gpp','ks_led','bc_lcc','BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR','Caribou','AllBirds','ForestBirds','ConiferBirds','DeciduousBirds','MixedwoodBirds','GrasslandBirds','NeoMigrantBirds','ShortMigrantBirds','NomadicBirds','ResidentBirds','DecliningBirds','LowConcernBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters','rep')]
+        write_csv(zz, paste0('output/ecoregions_by_spp/eco_',eco,'_nets_spp_ks.csv'))
 
     }
 }

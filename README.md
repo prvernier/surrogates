@@ -1,6 +1,6 @@
 # Surrogates Paper
 
-Revised: 2021-04-13
+Revised: 2021-05-25
 
 
 Evaluating the Effectiveness of Biodiversity Surrogates
@@ -15,6 +15,21 @@ Beacons et al. <i>in prep</i>. Evaluating the Effectiveness of Biodiversity Surr
 
 * [Ecoregion 89 case study: Evaluating the effectiveness of surrogates](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_89.html)
 * [Ecoregion 181 case study: Evaluating the effectiveness of surrogates](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_181.html)
+
+
+## Shiny app
+
+We developed a R Shiny app to enable readers and conservation planners in the boreal region to explore the results of the analysis and to identify species/assemblages and bird conservation regions (BCRs) combinations that are adequately or inadequately represented by benchmark networks selected using surrogates of large-scale environmental variation. To run the app from a local machine:
+
+  1. Install R
+  2. Install the following additional packages:
+
+    >install.packages(c("sf","tmap","ggplot2","tidyverse","shinydashboard"))
+
+  3. Start the Shiny app:
+
+    >library(shiny)
+    >runGitHub( "prvernier/surrogates", subdir="shiny")
 
 
 ## Code
