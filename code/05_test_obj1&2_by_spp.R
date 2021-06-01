@@ -5,7 +5,7 @@
   # Use t-test or wilcox.test (t-test should be fine due to large sample sizes)
   # Calculate effect size = (mean of DMrep) – (mean of DMnonrep) / std dev of DM
   # https://easystats.github.io/effectsize/articles/interpret.html
-# PV 2021-03-22
+# PV 2021-05-26
 
 library(tidyverse)
 library(broom)
@@ -16,7 +16,7 @@ x = read_csv('output/eco_bcr_data_by_spp.csv')
 # Bird assemblages by BCR
 gz1 = gather(x, species, dissim, allbirds:overwaternesters) %>% #, factor_key=TRUE)
     filter(!bcr=="BCR10") %>%
-    select(bcr, rep, species, dissim, ks_cmi, ks_gpp, ks_led, bc_lcc) %>%
+    dplyr::select(bcr, rep, species, dissim, ks_cmi, ks_gpp, ks_led, bc_lcc) %>%
     group_by(species,bcr) %>% 
     summarize(
         n_rep = sum(rep),
@@ -43,7 +43,7 @@ z1 = tibble(dz1) %>%
 eco_list = c(51,52,53,55,59,60,62,68,69,70,71,72,74,77,78,80,87,88,89,90,94,95,100,103,104,105,136,215,216,217)
 gz2 = filter(x, ecoregion %in% eco_list) %>% 
     gather(species, dissim, caribou)  %>% 
-    select(bcr, rep, species, dissim) %>% drop_na()
+    dplyr::select(bcr, rep, species, dissim) %>% drop_na()
 gz2 = gz2 %>% group_by(species,bcr) %>% 
     summarize(
         n_rep = sum(rep),

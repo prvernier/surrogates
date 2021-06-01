@@ -1,6 +1,6 @@
 # Surrogates Paper
 
-Revised: 2021-05-25
+Revised: 2021-06-01
 
 
 Evaluating the Effectiveness of Biodiversity Surrogates
@@ -10,11 +10,17 @@ Evaluating the Effectiveness of Biodiversity Surrogates
 
 Beacons et al. <i>in prep</i>. Evaluating the Effectiveness of Biodiversity Surrogates for Conservation Planning in the Boreal Region of Canada.
 
+## Supporting information
 
-## Case study
+  - Appendix A1. Building and filtering networks
+  - Appendix A2. Number of networks by ecoregion. Representative and non-representative benchmark networks in each ecoregion used in the evaluation of surrogates within the ecozones of the boreal region of Canada. Criteria used to differentiate representative and non-representative networks are described in the methods section. Networks were also filtered to reduce spatial overlap. The number of ecoregions used in the analysis varied by species based on the extent of their ranges.
+  - Appendix A3. Species names and assemblages. Common and scientific names and assemblage membership of test features (species) used in the evaluation of surrogates. Many of the species were also combined into habitat or nesting assemblages (Barker et al. 2014). The forest habitat assemblage includes 53 species that are primarily associated with forested habitats (Stralberg et al. 2015).
+  - TableS3a_rep_meanDissim.csv
+  - TableS3b_rep_sumDensity.csv
 
-* [Ecoregion 89 case study: Evaluating the effectiveness of surrogates](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_89.html)
+## Case Study
 
+  - [Ecoregion 89 case study: Evaluating the effectiveness of surrogates](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_89.html)
 
 ## Shiny app
 

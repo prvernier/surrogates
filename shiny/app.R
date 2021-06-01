@@ -1,4 +1,5 @@
 library(sf)
+library(DT)
 library(tmap)
 library(ggplot2)
 library(tidyverse)
@@ -10,6 +11,8 @@ BCRs <- st_read('maps/pba_ecozones.shp') %>%
 x <- read_csv('rep.csv')
 features <- c('Caribou','AllBirds','ForestBirds','ConiferBirds','DeciduousBirds','MixedwoodBirds','GrasslandBirds','NeoMigrantBirds','ShortMigrantBirds','NomadicBirds','ResidentBirds','DecliningBirds','LowConcernBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters','BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR')
 opts <- tmap_options(basemaps = c(Canvas = "Esri.NatGeoWorldMap", Imagery = "Esri.WorldImagery"))
+z1 <- read_csv('../supp/TableS2_species_&_assemblages.csv')
+z2 <- read_csv('../supp/TableS1_networks_&_ecoregions.csv')
 
 ui <- dashboardPage(
 	dashboardHeader(title="Surrogates Evaluation"),
@@ -30,7 +33,9 @@ ui <- dashboardPage(
                 fluidRow(
                     tabBox(
                         id="tb1", width="12",
-                        tabPanel("BCR map", tmapOutput("map", height='600'))
+                        tabPanel("BCR map", tmapOutput("map", height='600')),
+                        tabPanel("Species", dataTableOutput("tab1")),
+                        tabPanel("Networks", dataTableOutput("tab2"))
                     )
                 )
             ),
@@ -42,7 +47,7 @@ ui <- dashboardPage(
                     ),
                     tabBox(id="p2", width="12",
                         tabPanel("Feature 2", plotOutput("plot2"))
-                    )
+                   )
                 )
             ),
             tabItem(tabName="three",
@@ -60,7 +65,7 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
 
     getPage<-function() {
-        return(includeHTML("case_study_89.html"))
+        return(includeHTML('../supp/case_study_89.html'))
     }
     
     output$inc<-renderUI({getPage()})
@@ -94,6 +99,14 @@ server <- function(input, output, session) {
             scale_fill_manual(values=c('#f0f0f0','#bdbdbd','#636363')) +
             facet_grid(species ~ bcr)
     }, res=96)
+
+    output$tab1 <- renderDataTable({
+		datatable(z1, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 10), class="compact")
+    })
+
+    output$tab2 <- renderDataTable({
+		datatable(z2, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 20), class="compact")
+    })
 
 }
 

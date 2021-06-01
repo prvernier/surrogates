@@ -1,5 +1,5 @@
 # Calculate KS for caribou and species groups in rep and nonrep networks
-# PV 2021-05-10
+# PV 2021-05-26
 
 library(sf)
 library(raster)
@@ -12,7 +12,10 @@ prj = "+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=G
 #sppList = c('Caribou','AllBirds','ForestBirds','ConiferBirds','DeciduousBirds','MixedwoodBirds','GrasslandBirds','NeoMigrantBirds','ShortMigrantBirds','NomadicBirds','ResidentBirds','DecliningBirds','LowConcernBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters')
 guilds = read_csv('code/input/guilds.csv')
 sppCodes = pull(guilds, Code)
-sppList = c('Caribou',sppCodes,'AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters')
+wfowl = c('ABDU','AGWT','AMWI','BUFF','BWTE','CANV','GADW','GGOL','GMER','GSCA','GSCO','MALL','NOPI','NSHO','REDH','RNDU','RUDU')
+#sppList = c('Caribou',sppCodes,'AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters')
+sppList = c('Caribou',sppCodes,wfowl)
+#sppList = c('ABDU','AGWT','AMWI','BUFF','BWTE','CANV','GADW','GGOL','GMER','GSCA','GSCO','MALL','NOPI','NSHO','REDH','RNDU','RUDU')
 fda_shp = read_sf('data/vector/pan_ecoregions_fda_v3.shp') %>% st_transform(crs=prj)
 netstats = read_csv('code/input/ecoregion_statistics.csv')
 ecoList = sort(netstats$ecoregion)
@@ -96,48 +99,88 @@ for (eco in ecoList) {
         x_nonrep = mutate(x_nonrep, rep=0)
         x = bind_rows(x_rep, x_nonrep)
         #write_csv(x, paste0("output/ecoregions/eco_",eco,"_nets_spp_ks.csv"))
-        write_csv(x, paste0('output/ecoregions_by_spp/eco_',eco,'_nets_spp_ks_by_spp.csv'))
-
-        # Combine songbirds into assemblages
-        z = select(x, network, ks_cmi, ks_gpp, ks_led, bc_lcc, BLBW, BOCH, BRCR, BTNW, CAWA, CMWA, OSFL, PIGR, RUBL, SWTH, WWCR, Caribou, AllWaterfowl, CavityNesters, GroundNesters, OverwaterNesters, rep)
-        y = select(x, sppCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, AllBirds=round(y,3))
-        subCodes = filter(guilds, forest==1) %>% pull(Code)
-        y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, ForestBirds=round(y,3))
-        subCodes = filter(guilds, declining==1) %>% pull(Code)
-        y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, DecliningBirds=round(y,3))
-        subCodes = filter(guilds, low_concern==1) %>% pull(Code)
-        y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, LowConcernBirds=round(y,3))
-        subCodes = filter(guilds, conifer==1) %>% pull(Code)
-        y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, ConiferBirds=round(y,3))
-        subCodes = filter(guilds, deciduous==1) %>% pull(Code)
-        y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, DeciduousBirds=round(y,3))
-        subCodes = filter(guilds, mixedwood==1) %>% pull(Code)
-        y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, MixedwoodBirds=round(y,3))
-        subCodes = filter(guilds, grassland==1) %>% pull(Code)
-        y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, GrasslandBirds=round(y,3))
-        subCodes = filter(guilds, neo_migrant==1) %>% pull(Code)
-        y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, NeoMigrantBirds=round(y,3))
-        subCodes = filter(guilds, short_migrant==1) %>% pull(Code)
-        y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, ShortMigrantBirds=round(y,3))
-        subCodes = filter(guilds, nomadic==1) %>% pull(Code)
-        y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, NomadicBirds=round(y,3))
-        subCodes = filter(guilds, resident==1) %>% pull(Code)
-        y = select(x, subCodes) %>% rowMeans(na.rm=TRUE)
-        z = mutate(z, ResidentBirds=round(y,3))
-
-        zz = z[,c('network','ks_cmi','ks_gpp','ks_led','bc_lcc','BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR','Caribou','AllBirds','ForestBirds','ConiferBirds','DeciduousBirds','MixedwoodBirds','GrasslandBirds','NeoMigrantBirds','ShortMigrantBirds','NomadicBirds','ResidentBirds','DecliningBirds','LowConcernBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters','rep')]
-        write_csv(zz, paste0('output/ecoregions_by_spp/eco_',eco,'_nets_spp_ks.csv'))
-
+        write_csv(x, paste0('output/ecoregions_by_spp/eco_',eco,'_nets_spp_ks_by_spp_wfowl.csv'))
     }
+}
+
+# Combine waterfowl into guilds
+for (eco in ecoList) {
+    x = read_csv(paste0('output/ecoregions_by_spp/eco_',eco,'_nets_spp_ks_by_spp_wfowl.csv'))
+    z = dplyr::select(x, network, ks_cmi, ks_gpp, ks_led, bc_lcc, sppList, rep)
+    # AllWaterfowl
+    y = dplyr::select(z, sppList) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, AllWaterfowl=round(y,3))
+    # CavityNesters
+    y = dplyr::select(z, BUFF, GGOL, GMER) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, CavityNesters=round(y,3))
+    # GroundNesters
+    y = dplyr::select(z, ABDU, AGWT, AMWI, BWTE, GADW, GSCO, MALL, NOPI, NSHO) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, CavityNesters=round(y,3))
+    # OverwaterNesters
+    y = dplyr::select(z, CANV, REDH, RNDU, RUDU, GSCA) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, CavityNesters=round(y,3))
+}
+
+for (eco in ecoList) {
+
+    x1 = read_csv(paste0('output/ecoregions_by_spp/eco_',eco,'_nets_spp_ks_by_spp.csv'))
+    x2 = read_csv(paste0('output/ecoregions_by_spp/eco_',eco,'_nets_spp_ks_by_spp_wfowl.csv'))
+    x = left_join(x1,x2)
+    #z = select(x, network, ks_cmi, ks_gpp, ks_led, bc_lcc, BLBW, BOCH, BRCR, BTNW, CAWA, CMWA, OSFL, PIGR, RUBL, SWTH, WWCR, Caribou, AllWaterfowl, CavityNesters, GroundNesters, OverwaterNesters, rep)
+    z = dplyr::select(x, network, ks_cmi, ks_gpp, ks_led, bc_lcc, BLBW, BOCH, BRCR, BTNW, CAWA, CMWA, OSFL, PIGR, RUBL, SWTH, WWCR, Caribou, wfowl, rep)
+    
+    # Combine songbirds into assemblages
+    y = dplyr::select(x, sppCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, AllBirds=round(y,3))
+    subCodes = filter(guilds, forest==1) %>% pull(Code)
+    y = dplyr::select(x, subCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, ForestBirds=round(y,3))
+    subCodes = filter(guilds, declining==1) %>% pull(Code)
+    y = dplyr::select(x, subCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, DecliningBirds=round(y,3))
+    subCodes = filter(guilds, low_concern==1) %>% pull(Code)
+    y = dplyr::select(x, subCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, LowConcernBirds=round(y,3))
+    subCodes = filter(guilds, conifer==1) %>% pull(Code)
+    y = dplyr::select(x, subCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, ConiferBirds=round(y,3))
+    subCodes = filter(guilds, deciduous==1) %>% pull(Code)
+    y = dplyr::select(x, subCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, DeciduousBirds=round(y,3))
+    subCodes = filter(guilds, mixedwood==1) %>% pull(Code)
+    y = dplyr::select(x, subCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, MixedwoodBirds=round(y,3))
+    subCodes = filter(guilds, grassland==1) %>% pull(Code)
+    y = dplyr::select(x, subCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, GrasslandBirds=round(y,3))
+    subCodes = filter(guilds, neo_migrant==1) %>% pull(Code)
+    y = dplyr::select(x, subCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, NeoMigrantBirds=round(y,3))
+    subCodes = filter(guilds, short_migrant==1) %>% pull(Code)
+    y = dplyr::select(x, subCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, ShortMigrantBirds=round(y,3))
+    subCodes = filter(guilds, nomadic==1) %>% pull(Code)
+    y = dplyr::select(x, subCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, NomadicBirds=round(y,3))
+    subCodes = filter(guilds, resident==1) %>% pull(Code)
+    y = dplyr::select(x, subCodes) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, ResidentBirds=round(y,3))
+
+    # Combine waterfowl into guilds
+    #z = dplyr::select(x, network, ks_cmi, ks_gpp, ks_led, bc_lcc, wfowl, rep)
+    # AllWaterfowl
+    y = dplyr::select(z, wfowl) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, AllWaterfowl=round(y,3))
+    # CavityNesters
+    y = dplyr::select(z, BUFF, GGOL, GMER) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, CavityNesters=round(y,3))
+    # GroundNesters
+    y = dplyr::select(z, ABDU, AGWT, AMWI, BWTE, GADW, GSCO, MALL, NOPI, NSHO) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, GroundNesters=round(y,3))
+    # OverwaterNesters
+    y = dplyr::select(z, CANV, REDH, RNDU, RUDU, GSCA) %>% rowMeans(na.rm=TRUE)
+    z = mutate(z, OverwaterNesters=round(y,3))
+
+    zz = z[,c('network','ks_cmi','ks_gpp','ks_led','bc_lcc','BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR','Caribou','AllBirds','ForestBirds','ConiferBirds','DeciduousBirds','MixedwoodBirds','GrasslandBirds','NeoMigrantBirds','ShortMigrantBirds','NomadicBirds','ResidentBirds','DecliningBirds','LowConcernBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters','rep')]
+    write_csv(zz, paste0('output/ecoregions_by_spp/eco_',eco,'_nets_spp_ks.csv'))
 }
