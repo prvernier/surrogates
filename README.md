@@ -12,7 +12,7 @@ Beacons et al. <i>in prep</i>. Evaluating the Effectiveness of Biodiversity Surr
 
 ## Supporting information
 
-  - [Appendix S1](supp/S1_building_and_filtering_networks.md). Construction and filtering of benchmark networks.
+  - [Appendix S1](supp/S1_building_and_filtering.md). Construction and filtering of benchmark networks.
   - [Appendix S2](supp/S2_networks_and_ecoregions.csv). Table summarizing the number of networks by ecoregion.
   - [Appendix S3](supp/S3_species_and_assemblages.csv). Table listing common and scientific names of for test species along with their assemblage membership(s).
   - [Appendix S4a](supp/S4a_rep_sumDensity.csv). Table of results for objectives 1 and 2 using the sum of density approach.
