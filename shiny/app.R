@@ -12,8 +12,8 @@ y1 <- read_csv('rep_meanDissim.csv')
 y2 <- read_csv('rep_sumDensity.csv')
 features <- c('Caribou','AllBirds','ForestBirds','ConiferBirds','DeciduousBirds','MixedwoodBirds','GrasslandBirds','NeoMigrantBirds','ShortMigrantBirds','NomadicBirds','ResidentBirds','DecliningBirds','LowConcernBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters','BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR')
 opts <- tmap_options(basemaps = c(Canvas = "Esri.NatGeoWorldMap", Imagery = "Esri.WorldImagery"))
-z1 <- read_csv('../supp/TableS2_species_&_assemblages.csv')
-z2 <- read_csv('../supp/TableS1_networks_&_ecoregions.csv')
+z1 <- read_csv('../supp/S3_species_and_assemblages.csv')
+z2 <- read_csv('../supp/S2_networks_and_ecoregions.csv')
 z3 <- read_csv('../shiny/vi_meanDissim.csv')
 z4 <- read_csv('../shiny/vi_sumDensity.csv')
 
@@ -70,7 +70,8 @@ ui <- dashboardPage(
                 fluidRow(
                     tabBox(
                         id="tb1", width="12",
-                        tabPanel("Ecoregion 89", htmlOutput('inc'))
+                        tabPanel("Case study 1", htmlOutput('inc1')),
+                        tabPanel("Case study 2", htmlOutput('inc2'))
                     )
                 )
             )
@@ -80,11 +81,17 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) {
 
-    getPage<-function() {
-        return(includeHTML('../supp/case_study_89.html'))
+    getPage1<-function() {
+        return(includeHTML('../supp/case_study_1.html'))
     }
     
-    output$inc<-renderUI({getPage()})
+    output$inc1<-renderUI({getPage1()})
+
+    getPage2<-function() {
+        return(includeHTML('../supp/case_study_2.html'))
+    }
+    
+    output$inc2<-renderUI({getPage2()})
 
     output$map <- renderTmap({
             tm_shape(BCRs) +  tm_polygons(col='bcr', alpha=0.5)
