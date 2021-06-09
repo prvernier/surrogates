@@ -21,6 +21,7 @@ Beacons et al. <i>in prep</i>. Evaluating the Effectiveness of Biodiversity Surr
 ## Case Study
 
   - [Ecoregion 89 case study: Evaluating the effectiveness of surrogates](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_89.html)
+  - [Representation methods comparison]((https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/representation_comparison.html)
 
 ## Shiny app
 
