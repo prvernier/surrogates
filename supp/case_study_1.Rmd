@@ -3,12 +3,15 @@ title: "Representation method comparison"
 output: 
   html_document:
     fig_caption: yes
+    css: styles.css
 ---
 <br>
 
+# Introduction
+
 The surrogates manuscript defines networks as representative if they meet two representation evaluations: the MDR-based target method and the dissimilarity method.
 
-#### Dissimilarity method
+## Dissimilarity method
 
 The dissimilarity method uses the KS-statistic (for continuous variables) or the Bray-Curtis statistic (for categorical variables) to compare the distribution of a surrogate in a reserve network against its distribution in the ecoregion in which it occurs. KS values of 0.2 or less are considered to be representative. This method works well if the goal is for the distribution of the surrogate to be similar to its distribution in the ecoregion. However, over-representation of a surrogate is penalised with increasing dissimilarity values. For example, the distribution of specific class of a surrogate (e.g., conifer forest) in a network might match its distribution in an ecoregion quite well, but have a large amount of that specific feature type. The dissimilarity value in this scenario will be high due to the over-representation of conifer forest.
 
@@ -25,7 +28,7 @@ Cons:
 
 <br>
 
-#### MDR target method
+## MDR target method
 
 The MDR-based target method sets a target for each class in a classified map of the surrogate being represented. The target proportions of each class are relative to the proportions that occur in the ecoregion and should sum to the MDR value of ecoregion i.e., the reserve size required to maintain ecological processes under the regional fire regime. Rare classes covering less than 5% of the ecoregion are dropped because they are difficult to meet. The area of each class in the reserve network is tested against its target. In order for a target to be met it must occur fully in at least one benchmark in the network. This maximises the chance that the class is maintained over time under the regional fire regime. In order for a network to pass a target, at least one reserve in the network must meet the target. **In the manuscript we used a 90% threshold to meet a target, here for demonstration purposes we require the full target to be met.** 
 
@@ -40,6 +43,8 @@ Cons:
 * Networks with distributions matching the ecoregion do not necessarily pass targets (see Network 2)
 
 ---
+
+# Illustration
 
 Here we demonstrate the strengths and weaknesses of each of these methods as a justification for using both methods together when selecting representative networks in the manuscript. We examine two constrasting networks for their ability to represent climate moisture index (CMI). The dissimilarity approach uses a continuous map of CMI, whereas the MDR target approach uses a classified version of the CMI map.
 
@@ -118,9 +123,7 @@ net2 <- net2[c("class", "range", "target_km2", "PB_194902", "PB_198659", "pass")
 names(net2) <- c("CMI class", "CMI value range", "Target (km2)", "PB_194902 (km2)", "PB_198659 (km2)", "Target passed")
 ```
 
-## Network 1:
-
-### Passes targets, poor dissimilarity
+## Network 1: Passes targets, poor dissimilarity
 
 First we consider a network that passes all of the MDR-based targets, but has a relatively high KS-statistic when compared to the ecoregion. When this network is compared as a whole to the CMI distribution across the ecoregion, the KS value is relatively high at 0.371. This is because the higher CMI values in the more southern protected area (PB_200624) skew the distribution. This can be seen in the density plot below.
 
@@ -148,8 +151,7 @@ ksPlot(reference_vals, target_vals, plotTitle = "", saveAs = "eco170/PB_196152_P
 ![](eco170/PB_196152_PB_200624.png)
 </center>
 
-## Network 2: 
-### Fails targets, good dissimilarity
+## Network 2: Fails targets, good dissimilarity
 
 The second network we consider is also made up of two protected areas. In contrast to Network 1, this network has a very good dissimilarity value of 0.044. This suggests that when taken as a whole, the network has a relatively similar distribution of CMI compared to the ecoregion. This can be seen in the density plot below where the two lines track much closer than in Network 1.
 

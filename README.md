@@ -1,6 +1,6 @@
 # Surrogates Paper
 
-Revised: 2021-06-01
+Revised: 2021-06-09
 
 
 Evaluating the Effectiveness of Biodiversity Surrogates
@@ -12,20 +12,20 @@ Beacons et al. <i>in prep</i>. Evaluating the Effectiveness of Biodiversity Surr
 
 ## Supporting information
 
-  - Appendix A1. Building and filtering networks
-  - Appendix A2. Number of networks by ecoregion. Representative and non-representative benchmark networks in each ecoregion used in the evaluation of surrogates within the ecozones of the boreal region of Canada. Criteria used to differentiate representative and non-representative networks are described in the methods section. Networks were also filtered to reduce spatial overlap. The number of ecoregions used in the analysis varied by species based on the extent of their ranges.
-  - Appendix A3. Species names and assemblages. Common and scientific names and assemblage membership of test features (species) used in the evaluation of surrogates. Many of the species were also combined into habitat or nesting assemblages (Barker et al. 2014). The forest habitat assemblage includes 53 species that are primarily associated with forested habitats (Stralberg et al. 2015).
-  - TableS3a_rep_meanDissim.csv
-  - TableS3b_rep_sumDensity.csv
+  - Appendix S1. Construction and filtering of benchmark networks.
+  - Appendix S2. Table summarizing the number of networks by ecoregion.
+  - Appendix S3. Table listing common and scientific names of for test species along with their assemblage membership(s).
+  - Appendix S4a. Table of results for objectives 1 and 2 using the sum of density approach.
+  - Appendix S4a. Table of results for objectives 1 and 2 using the mean dissimilarity approach.
 
 ## Case Study
 
-  - [Ecoregion 89 case study: Evaluating the effectiveness of surrogates](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_89.html)
-  - [Representation methods comparison]((https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/representation_comparison.html)
+  - [Case study 1](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_1.html). Case study comparing two methods used to evaluate representation.
+  - [Case study 2](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/case_study_2.html). Case study illustrating the difference between evaluating representativeness and representation.
 
 ## Shiny app
 
-We developed a R Shiny app to enable readers and conservation planners in the boreal region to explore the results of the analysis and to identify species/assemblages and bird conservation regions (BCRs) combinations that are adequately or inadequately represented by benchmark networks selected using surrogates of large-scale environmental variation. To run the app from a local machine:
+We developed a R Shiny app to enable readers and conservation planners in the boreal region to explore the results of the analysis and to identify species/assemblages and bird conservation regions (BCRs) combinations that are adequately or inadequately represented by benchmark networks selected using environmental surrogates. To run the app from a local machine:
 
   1. Install R (download from r-project.org and follow instructions)
   2. Install the following additional packages:
