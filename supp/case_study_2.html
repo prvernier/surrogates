@@ -491,61 +491,133 @@ pre code {
 <p>In step 6, we calculate representation for biophysical surrogates and test features using dissimilarity metrics. We use the KS statistic for continuous maps and the Bray-Curtis metric for categorical data (land cover). We then summarize the results in a table. No statistical analysis can be performed in this example since we only calculated representativeness for one network in one ecoregion. In the full analysis (see Paper) we evaluated 17 test features across 30 ecoregions (grouped into 4 BCRs), with each ecoregion containing upwards of several thousand networks.</p>
 <table>
 <thead>
-<tr class="header">
-<th align="left">Code</th>
-<th align="left">Description</th>
-<th align="left">Map_type</th>
-<th align="left">Dissimilarity</th>
+<tr>
+<th style="text-align:left;">
+Code
+</th>
+<th style="text-align:left;">
+Description
+</th>
+<th style="text-align:left;">
+Map_type
+</th>
+<th style="text-align:left;">
+Dissimilarity
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">CMI</td>
-<td align="left">Climate moisture index</td>
-<td align="left">Surrogate</td>
-<td align="left">0.12</td>
+<tr>
+<td style="text-align:left;">
+CMI
+</td>
+<td style="text-align:left;">
+Climate moisture index
+</td>
+<td style="text-align:left;">
+Surrogate
+</td>
+<td style="text-align:left;">
+0.12
+</td>
 </tr>
-<tr class="even">
-<td align="left">GPP</td>
-<td align="left">Gross primary productivity</td>
-<td align="left">Surrogate</td>
-<td align="left">0.05</td>
+<tr>
+<td style="text-align:left;">
+GPP
+</td>
+<td style="text-align:left;">
+Gross primary productivity
+</td>
+<td style="text-align:left;">
+Surrogate
+</td>
+<td style="text-align:left;">
+0.05
+</td>
 </tr>
-<tr class="odd">
-<td align="left">LED</td>
-<td align="left">Lake-edge density</td>
-<td align="left">Surrogate</td>
-<td align="left">0.05</td>
+<tr>
+<td style="text-align:left;">
+LED
+</td>
+<td style="text-align:left;">
+Lake-edge density
+</td>
+<td style="text-align:left;">
+Surrogate
+</td>
+<td style="text-align:left;">
+0.05
+</td>
 </tr>
-<tr class="even">
-<td align="left">LCC</td>
-<td align="left">Landcover</td>
-<td align="left">Surrogate</td>
-<td align="left">0.12</td>
+<tr>
+<td style="text-align:left;">
+LCC
+</td>
+<td style="text-align:left;">
+Landcover
+</td>
+<td style="text-align:left;">
+Surrogate
+</td>
+<td style="text-align:left;">
+0.12
+</td>
 </tr>
-<tr class="odd">
-<td align="left">ConiferBirds</td>
-<td align="left">Conifer Birds</td>
-<td align="left">Test feature</td>
-<td align="left">0.10</td>
+<tr>
+<td style="text-align:left;">
+ConiferBirds
+</td>
+<td style="text-align:left;">
+Conifer Birds
+</td>
+<td style="text-align:left;">
+Test feature
+</td>
+<td style="text-align:left;">
+0.10
+</td>
 </tr>
-<tr class="even">
-<td align="left">DeciduousBirds</td>
-<td align="left">Deciduous Birds</td>
-<td align="left">Test feature</td>
-<td align="left">0.14</td>
+<tr>
+<td style="text-align:left;">
+DeciduousBirds
+</td>
+<td style="text-align:left;">
+Deciduous Birds
+</td>
+<td style="text-align:left;">
+Test feature
+</td>
+<td style="text-align:left;">
+0.14
+</td>
 </tr>
-<tr class="odd">
-<td align="left">MixedwoodBirds</td>
-<td align="left">Mixedwood Birds</td>
-<td align="left">Test feature</td>
-<td align="left">0.25</td>
+<tr>
+<td style="text-align:left;">
+MixedwoodBirds
+</td>
+<td style="text-align:left;">
+Mixedwood Birds
+</td>
+<td style="text-align:left;">
+Test feature
+</td>
+<td style="text-align:left;">
+0.25
+</td>
 </tr>
-<tr class="even">
-<td align="left">GrasslandBirds</td>
-<td align="left">Grassland Birds</td>
-<td align="left">Test feature</td>
-<td align="left">0.13</td>
+<tr>
+<td style="text-align:left;">
+GrasslandBirds
+</td>
+<td style="text-align:left;">
+Grassland Birds
+</td>
+<td style="text-align:left;">
+Test feature
+</td>
+<td style="text-align:left;">
+0.13
+</td>
 </tr>
 </tbody>
 </table>
@@ -573,50 +645,93 @@ pre code {
 <hr />
 <p>In the final step of this vignette, we calculated the representation index for all representative networks (based on the four environmental surrogates) that were created for the ecoregion and we then selected the top network for each test species among all networks and among representative networks (based on surrogates).</p>
 <table>
-<colgroup>
-<col width="14%"></col>
-<col width="15%"></col>
-<col width="24%"></col>
-<col width="24%"></col>
-<col width="21%"></col>
-</colgroup>
 <thead>
-<tr class="header">
-<th align="left">Code</th>
-<th align="left">Density</th>
-<th align="left">Top_surrogates_network_KS</th>
-<th align="left">Top_surrogates_network_RI</th>
-<th align="left">Top_overall_network_RI</th>
+<tr>
+<th style="text-align:left;">
+Code
+</th>
+<th style="text-align:left;">
+Density
+</th>
+<th style="text-align:left;">
+Top_surrogates_network_KS
+</th>
+<th style="text-align:left;">
+Top_surrogates_network_RI
+</th>
+<th style="text-align:left;">
+Top_overall_network_RI
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">ConiferBirds</td>
-<td align="left">1.80 (0.30-3.60)</td>
-<td align="left">0.10</td>
-<td align="left">1.17</td>
-<td align="left">1.38</td>
+<tr>
+<td style="text-align:left;">
+ConiferBirds
+</td>
+<td style="text-align:left;">
+1.80 (0.30-3.60)
+</td>
+<td style="text-align:left;">
+0.10
+</td>
+<td style="text-align:left;">
+1.17
+</td>
+<td style="text-align:left;">
+1.38
+</td>
 </tr>
-<tr class="even">
-<td align="left">DeciduousBirds</td>
-<td align="left">1.10 (0.70-3.30)</td>
-<td align="left">0.14</td>
-<td align="left">1.43</td>
-<td align="left">1.51</td>
+<tr>
+<td style="text-align:left;">
+DeciduousBirds
+</td>
+<td style="text-align:left;">
+1.10 (0.70-3.30)
+</td>
+<td style="text-align:left;">
+0.14
+</td>
+<td style="text-align:left;">
+1.43
+</td>
+<td style="text-align:left;">
+1.51
+</td>
 </tr>
-<tr class="odd">
-<td align="left">MixedwoodBirds</td>
-<td align="left">2.10 (0.60-4.90)</td>
-<td align="left">0.25</td>
-<td align="left">1.56</td>
-<td align="left">1.76</td>
+<tr>
+<td style="text-align:left;">
+MixedwoodBirds
+</td>
+<td style="text-align:left;">
+2.10 (0.60-4.90)
+</td>
+<td style="text-align:left;">
+0.25
+</td>
+<td style="text-align:left;">
+1.56
+</td>
+<td style="text-align:left;">
+1.76
+</td>
 </tr>
-<tr class="even">
-<td align="left">GrasslandBirds</td>
-<td align="left">0.00 (0.00-0.50)</td>
-<td align="left">0.13</td>
-<td align="left">1.02</td>
-<td align="left">1.26</td>
+<tr>
+<td style="text-align:left;">
+GrasslandBirds
+</td>
+<td style="text-align:left;">
+0.00 (0.00-0.50)
+</td>
+<td style="text-align:left;">
+0.13
+</td>
+<td style="text-align:left;">
+1.02
+</td>
+<td style="text-align:left;">
+1.26
+</td>
 </tr>
 </tbody>
 </table>
