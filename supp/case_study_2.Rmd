@@ -1,5 +1,5 @@
 ---
-title: "Case Study: Evaluating the effectiveness of surrogates"
+title: "Case study: Evaluating the effectiveness of surrogates"
 #date: "`r format(Sys.time(), '%d %B %Y')`"
 #author: "Pierre Vernier"
 output:
