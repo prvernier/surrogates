@@ -27,7 +27,6 @@ We first need to import some libraries for reading and analysing raster and vect
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(sf)
-library(DT)
 library(raster)
 library(tmap)
 library(tidyverse)
@@ -180,9 +179,8 @@ x2 = c("Climate moisture index","Gross primary productivity","Lake-edge density"
 x3 = c("Surrogate","Surrogate","Surrogate","Surrogate","Test feature","Test feature","Test feature","Test feature")
 x4 = c(unlist(ks1[2:4]), unlist(ks1[2]), unlist(ks2[2:5]))
 df = tibble(Code=x1,Description=x2,Map_type=x3,Dissimilarity=sprintf("%.2f",x4))
-df
-datatable(df, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 25,
-    columnDefs = list(list(className = 'dt-center', targets = 2:3))), class="compact")
+names(df) <- c("Surrogate/Feature","Description","Map type","Dissimilarity")
+knitr::kable(df, align="llll")
 ```
 
 In this example, the network we selected can be considered to be representative of the four surrogates using a threshold of 0.2 on a scale of 0-1, with lower values indicating increasing similarity. Other thresholds can be used. The KS values for the four test features are also shown in the far right column in the table. As with the surrogates, we consider test features to be representative if they have a KS values less than or equal to 0.2. This example is based on a sample size of one. By repeating this for many networks, we can model the relationship between surrogates representativeness and test features representativeness to assess whether or not a relationship exists.
@@ -226,12 +224,11 @@ df = tibble(Code = c("ConiferBirds","DeciduousBirds","MixedwoodBirds","Grassland
     Top_surrogates_network_KS = sprintf("%.2f",unlist(ks2[2:5])),
     Top_surrogates_network_RI = sprintf("%.2f",unlist(ri1[2:5])),
     Top_overall_network_RI = sprintf("%.2f",c(max(y$ConiferBirds_ri), max(y$DeciduousBirds_ri), max(y$MixedwoodBirds_ri), max(y$GrasslandBirds_ri))))
-df
-datatable(df, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 25,
-    columnDefs = list(list(className = 'dt-center', targets = 1:4))), class="compact")
+names(df) <- c('Feature','Density (range)','Top "surrogate" network (KS)', 'Top "surrogate" network (RI)', 'Top overall network (RI)')
+knitr::kable(df, align="lcccc")
 ```
 
-The results indicate that, for each test species, the best network for that species came from the larger set of networks not just the networks that are representative for the four surrogates. We also note, that representative networks were also identified for the four species amongst the set of representative networks. Interestingly, the same network was most representative for both Caribou and Rusty Blackbird.
+The results indicate that, for each test species, the best network for that species came from the larger set of networks not just the networks that are representative for the four surrogates. We also note, that representative networks were also identified for the four species amongst the set of representative networks.
 
 The map below shows the location of the top network (based on representation index) in red for ConiferBirds, DeciduousBirds, MixedwoodBirds and GrasslandBirds. The sample networks used in the previous steps is also shown in grey.
 
