@@ -180,6 +180,7 @@ x2 = c("Climate moisture index","Gross primary productivity","Lake-edge density"
 x3 = c("Surrogate","Surrogate","Surrogate","Surrogate","Test feature","Test feature","Test feature","Test feature")
 x4 = c(unlist(ks1[2:4]), unlist(ks1[2]), unlist(ks2[2:5]))
 df = tibble(Code=x1,Description=x2,Map_type=x3,Dissimilarity=sprintf("%.2f",x4))
+df
 datatable(df, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 25,
     columnDefs = list(list(className = 'dt-center', targets = 2:3))), class="compact")
 ```
@@ -225,6 +226,7 @@ df = tibble(Code = c("ConiferBirds","DeciduousBirds","MixedwoodBirds","Grassland
     Top_surrogates_network_KS = sprintf("%.2f",unlist(ks2[2:5])),
     Top_surrogates_network_RI = sprintf("%.2f",unlist(ri1[2:5])),
     Top_overall_network_RI = sprintf("%.2f",c(max(y$ConiferBirds_ri), max(y$DeciduousBirds_ri), max(y$MixedwoodBirds_ri), max(y$GrasslandBirds_ri))))
+df
 datatable(df, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 25,
     columnDefs = list(list(className = 'dt-center', targets = 1:4))), class="compact")
 ```
