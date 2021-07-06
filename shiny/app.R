@@ -7,7 +7,7 @@ library(shinydashboard)
 
 BCRs <- st_read('maps/pba_ecozones.shp') %>% 
     filter(!BCR %in% c('BCR10','BCR11')) %>%
-    mutate(bcr = substr(BCR, 4, 5), ecozone=NULL, code=NULL, BCR=NULL, sort=NULL)
+    mutate(BCR = substr(BCR, 4, 5), ecozone=paste("Ecozone",ecozone), sort=NULL, code=NULL)
 y1 <- read_csv('rep_meanDissim.csv')
 y2 <- read_csv('rep_sumDensity.csv')
 features <- c('Caribou','AllBirds','ForestBirds','ConiferBirds','DeciduousBirds','MixedwoodBirds','GrasslandBirds','NeoMigrantBirds','ShortMigrantBirds','NomadicBirds','ResidentBirds','DecliningBirds','LowConcernBirds','AllWaterfowl','CavityNesters','GroundNesters','OverwaterNesters','BLBW','BOCH','BRCR','BTNW','CAWA','CMWA','OSFL','PIGR','RUBL','SWTH','WWCR')
@@ -21,11 +21,11 @@ ui <- dashboardPage(
 	dashboardHeader(title="Surrogates Evaluation"),
     dashboardSidebar(
 	    sidebarMenu(
-            menuItem("Study region", tabName="one", icon=icon("th")),
+            menuItem("Introduction", tabName="one", icon=icon("th")),
             menuItem("Representativeness", tabName="two", icon=icon("th")),
             menuItem("Surrogates importance", tabName="four", icon=icon("th")),
-            menuItem("Case study", tabName="three", icon=icon("th")),
-            selectInput("type", label="Feature type:", choices=c("Mean dissimilarity","Sum density"), multiple=FALSE, selected="Mean dissimilarity"),
+            menuItem("Case studies", tabName="three", icon=icon("th")),
+            #selectInput("type", label="Feature type:", choices=c("Mean dissimilarity","Sum density"), multiple=FALSE, selected="Mean dissimilarity"),
             selectInput("feature1", label="Feature 1:", choices=features, multiple=FALSE, selected="ConiferBirds"),
             selectInput("feature2", label="Feature 2:", choices=features, multiple=FALSE, selected="DeciduousBirds"),
             hr(),
@@ -38,7 +38,9 @@ ui <- dashboardPage(
                 fluidRow(
                     tabBox(
                         id="tb1", width="12",
-                        tabPanel("BCR map", tmapOutput("map", height='600')),
+                        #tabPanel("Description", includeMarkdown('intro.md')),
+                        tabPanel("Description", uiOutput('intro')),
+                        tabPanel("Study region", tmapOutput("map", height='600')),
                         tabPanel("Species", dataTableOutput("tab1")),
                         tabPanel("Networks", dataTableOutput("tab2"))
                     )
@@ -59,10 +61,10 @@ ui <- dashboardPage(
                 fluidRow(
                     tabBox(
                         id="tb1", width="12",
-                        tabPanel("Feature 1 (mean dissim)", dataTableOutput("tab3")),
-                        tabPanel("Feature 2 (mean dissim)", dataTableOutput("tab4")),
-                        tabPanel("Feature 1 (sum density)", dataTableOutput("tab5")),
-                        tabPanel("Feature 2 (sum density)", dataTableOutput("tab6"))
+                        #tabPanel("Feature 1 (mean dissim)", dataTableOutput("tab3")),
+                        #tabPanel("Feature 2 (mean dissim)", dataTableOutput("tab4")),
+                        tabPanel("Feature 1", dataTableOutput("tab5")),
+                        tabPanel("Feature 2", dataTableOutput("tab6"))
                     )
                 )
             ),
@@ -81,6 +83,12 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) {
 
+    getIntro<-function() {
+        return(includeMarkdown('intro.md'))
+    }
+    
+    output$intro<-renderText({getIntro()})
+
     getPage1<-function() {
         return(includeHTML('../supp/case_study_1.html'))
     }
@@ -94,23 +102,23 @@ server <- function(input, output, session) {
     output$inc2<-renderUI({getPage2()})
 
     output$map <- renderTmap({
-            tm_shape(BCRs) +  tm_polygons(col='bcr', alpha=0.5)
+            tm_shape(BCRs) +  tm_polygons(col='BCR', alpha=0.5)
     })
 
     x1 <- eventReactive(input$analyse, {
-        if (input$type=="Mean dissimilarity") {
-            y = filter(y1, species==input$feature1)
-        } else {
+        #if (input$type=="Mean dissimilarity") {
+        #    y = filter(y1, species==input$feature1)
+        #} else {
             y = filter(y2, species==input$feature1)
-        }
+        #}
     })
 
     x2 <- eventReactive(input$analyse, {
-        if (input$type=="Mean dissimilarity") {
-            y = filter(y1, species==input$feature2)
-        } else {
+        #if (input$type=="Mean dissimilarity") {
+        #    y = filter(y1, species==input$feature2)
+        #} else {
             y = filter(y2, species==input$feature2)
-        }
+        #}
     })
 
     output$plot1 <- renderPlot({
@@ -139,23 +147,27 @@ server <- function(input, output, session) {
 		datatable(z2, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 20), class="compact")
     })
 
-    output$tab3 <- renderDataTable({
-        z3 = dplyr::filter(z3, species==tolower(input$feature1))
-		datatable(z3, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 20), class="compact")
-    })
+    #output$tab3 <- renderDataTable({
+    #    z3 = dplyr::filter(z3, species==tolower(input$feature1))
+	#	datatable(z3, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 20), class="compact")
+    #})
 
-    output$tab4 <- renderDataTable({
-        z3 = filter(z3, species==tolower(input$feature2))
-		datatable(z3, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 20), class="compact")
-    })
+    #output$tab4 <- renderDataTable({
+    #    z3 = filter(z3, species==tolower(input$feature2))
+	#	datatable(z3, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 20), class="compact")
+    #})
 
     output$tab5 <- renderDataTable({
-        z4 = dplyr::filter(z4, species==tolower(input$feature1))
+        z4 = dplyr::filter(z4, species==tolower(input$feature1)) %>%
+            filter(!term=="Intcpt")
+        names(z4) <- c("Feature", "BCR", "Surrogate", "Estimate", "Std error", "t-statistic", "p-value")
 		datatable(z4, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 20), class="compact")
     })
 
     output$tab6 <- renderDataTable({
-        z4 = filter(z4, species==tolower(input$feature2))
+        z4 = filter(z4, species==tolower(input$feature2)) %>%
+            filter(!term=="Intcpt")
+        names(z4) <- c("Feature", "BCR", "Surrogate", "Estimate", "Std error", "t-statistic", "p-value")
 		datatable(z4, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 20), class="compact")
     })
 

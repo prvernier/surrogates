@@ -27,6 +27,7 @@ We first need to import some libraries for reading and analysing raster and vect
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(sf)
+library(DT)
 library(raster)
 library(tmap)
 library(tidyverse)
@@ -179,7 +180,8 @@ x2 = c("Climate moisture index","Gross primary productivity","Lake-edge density"
 x3 = c("Surrogate","Surrogate","Surrogate","Surrogate","Test feature","Test feature","Test feature","Test feature")
 x4 = c(unlist(ks1[2:4]), unlist(ks1[2]), unlist(ks2[2:5]))
 df = tibble(Code=x1,Description=x2,Map_type=x3,Dissimilarity=sprintf("%.2f",x4))
-knitr::kable(df)
+datatable(df, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 25,
+    columnDefs = list(list(className = 'dt-center', targets = 2:3))), class="compact")
 ```
 
 In this example, the network we selected can be considered to be representative of the four surrogates using a threshold of 0.2 on a scale of 0-1, with lower values indicating increasing similarity. Other thresholds can be used. The KS values for the four test features are also shown in the far right column in the table. As with the surrogates, we consider test features to be representative if they have a KS values less than or equal to 0.2. This example is based on a sample size of one. By repeating this for many networks, we can model the relationship between surrogates representativeness and test features representativeness to assess whether or not a relationship exists.
@@ -193,7 +195,7 @@ In the representation analysis, we want to evaluate the representation of the sa
 ## Step 7 - Calculate representation
 ***
 
-In step 7, we calculate the representation index for test features using the ratio of the proportion of test features in a network to the proportion of the network in the planning region (see "Relationship between species and surrogates" in the Methods section). The table below provides the results using the representation index for the same network and species.
+In step 7, we calculate the representation index for test features using the ratio of the proportion of test features in a network to the proportion of the network in the planning region. The table below provides the results using the representation index for the same network and species.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 fda_dslv <- st_union(fda) # for RI, use the FDA boundary as reference area
@@ -223,7 +225,8 @@ df = tibble(Code = c("ConiferBirds","DeciduousBirds","MixedwoodBirds","Grassland
     Top_surrogates_network_KS = sprintf("%.2f",unlist(ks2[2:5])),
     Top_surrogates_network_RI = sprintf("%.2f",unlist(ri1[2:5])),
     Top_overall_network_RI = sprintf("%.2f",c(max(y$ConiferBirds_ri), max(y$DeciduousBirds_ri), max(y$MixedwoodBirds_ri), max(y$GrasslandBirds_ri))))
-knitr::kable(df)
+datatable(df, rownames=F, options=list(dom = 'tip', scrollX = TRUE, scrollY = TRUE, pageLength = 25,
+    columnDefs = list(list(className = 'dt-center', targets = 1:4))), class="compact")
 ```
 
 The results indicate that, for each test species, the best network for that species came from the larger set of networks not just the networks that are representative for the four surrogates. We also note, that representative networks were also identified for the four species amongst the set of representative networks. Interestingly, the same network was most representative for both Caribou and Rusty Blackbird.

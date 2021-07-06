@@ -1,5 +1,5 @@
 ---
-title: "Case study: Representation method comparison"
+title: "Case study: Representativeness method comparison"
 output: 
   html_document:
     fig_caption: yes
