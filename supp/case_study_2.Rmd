@@ -15,7 +15,7 @@ params:
 
 # Introduction
 
-In this vignette, we illustrate the basic steps for evaluating the effectiveness of four environmental surrogates for four test features (ConiferBirds, DeciduousBirds, MixedwoodBirds, and GrasslandBirds) that occur in the boreal region of Canada. Specifically, we focus on the data preparation and analysis steps that are at the core of the surrogates evaluation. The examples focus on one benchmark network located in one ecoregion in the boreal region. The sample benchmarks network that we use as an example has the highest representation value for the four surrogates among the candidate networks in the nets_rep.shp shapefile. We are interested in evaluating if the sample network is also representative of our four test features. All the required input data have already been generated and are located in the "data" folder. Please contact me (pierre.vernier@gmail.com) if you come across any problems trying to replicate this sample analysis.
+In this case study, we illustrate the basic steps for evaluating the effectiveness of four environmental surrogates for four test features (ConiferBirds, DeciduousBirds, MixedwoodBirds, and GrasslandBirds) that occur in the boreal region of Canada. Specifically, we focus on the data preparation and analysis steps that are at the core of the surrogates evaluation. The examples focus on a set ecological benchmark networks that are located in one ecoregion in the boreal region (nets_rep.shp). All of the networks in the shapefile are representative of the four environmental surrogates. In the first analysis, we are interested in evaluating whether the top ranked network, based on the four surrogates, is also representative of our four test features. In the second analysis, we compare the previous approach with a complementary approach that focuses on maximizing reprensentation for the test features. All the required input data have already been generated and are located in the "data" folder. Please contact me (pierre.vernier@gmail.com) if you come across any problems trying to replicate this sample analysis.
 
 <br>
 
@@ -23,9 +23,9 @@ In this vignette, we illustrate the basic steps for evaluating the effectiveness
 
 ## Step 1 - Import libraries
 
-We first need to import some libraries for reading and analysing raster and vector data, and three functions for calculating dissimilarity and representation metrics: *calcBC* for calculating the Bray-Curtis metric for categorical data, *calcKS* for calculating the Kolmogorov-Smirnov statistic for continuous data, and *calcRI* for calculating the representation index for continuous data. The functions are in the main folder but you will need to install the packages using the "install.packages" function i.e., install.packages("sf", "raster", "tmap", "tidyverse").
+We first need to import some libraries for reading and analysing raster and vector data, and three functions for calculating dissimilarity and representation metrics: *calcBC* for calculating the Bray-Curtis metric for categorical data, *calcKS* for calculating the Kolmogorov-Smirnov statistic for continuous data, and *calcRI* for calculating the representation index for continuous data. Those functions are in the main folder but you will also need to install the packages using the "install.packages" function i.e., install.packages("sf", "raster", "tmap", "tidyverse").
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
 library(sf)
 library(raster)
 library(tmap)
@@ -37,7 +37,7 @@ source("R/calcRI.R")
 
 ## Step 2 - Read datasets
 
-We can now read the data into R. The study area consists of the ecoregion plus intersecting watersheds (FDAs). The ecoregion and FDA boundaries will be used as the reference areas in the analyses i.e., the region that the networks are compared to in terms of surrogates and test species. Networks are allowed to extend across ecoregion boundaries to enable hydrologic connectivity. The following datasets are available in the "data" folder:
+We can now read the data into R. The study area consists of the ecoregion plus intersecting watersheds (FDAs). The ecoregion and FDA boundaries will be used as the reference areas in the analyses i.e., the region that the networks are compared to in terms of surrogates and test features. Networks are allowed to extend across ecoregion boundaries to enable hydrologic connectivity. The following datasets are available in the "data" folder:
 
   * fda.shp - FDA boundary shapefile (extent of study area)
   * eco.shp - Ecoregion boundary shapefile (extent of reference area within study area
@@ -48,7 +48,7 @@ We can now read the data into R. The study area consists of the ecoregion plus i
   * MixedwoodBirds.tif - Density raster of bird species associated with mixedwood forests
   * GrasslandBirds.tif - Density raster of bird species associated with grasslands
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
 eco = st_read(paste0("eco",params$eco,"/eco.shp"), quiet=T) %>% 
     mutate(legend="Ecoregion")
 fda = st_read(paste0("eco",params$eco,"/fda.shp"), quiet=T) %>%
@@ -88,7 +88,7 @@ r4_max = round(cellStats(r4, max),1)
 
 The following map shows the location of ecoregion (grey) in the boreal region along with the extent of the intersecting watersheds (black outline), existing protected areas (green), and the sample network (red) comprising of 3 ecological benchmarks.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, out.width='100%'}
+```{r echo=TRUE, message=FALSE, warning=FALSE, out.width='100%'}
 osmtiles <- tmaptools::read_osm(fda, type="esri")
 tm_shape(osmtiles) + tm_rgb() +
     tm_shape(eco) + tm_polygons(col="legend", title="", pal="#1D1D1D", alpha=0.5) + 
@@ -105,9 +105,9 @@ tm_shape(osmtiles) + tm_rgb() +
 
 ## Step 4 - Plot surrogates
 ***
-The four plots show the distribution of climate moisture index (CMI), gross primary productivity (GPP), lake edge density (LED) and landcover (LCC) in the ecoregion and its intersecting watersheds. The sample benchmark network is also shown on each map.
+The four plots show the distribution of climate moisture index (CMI), gross primary productivity (GPP), lake edge density (LED) and landcover (LCC) in the ecoregion and its intersecting watersheds. Note that the LCC map is a categorical map, but it has too many classes to properly display in the map's legend below. The sample benchmark network is also shown on each map.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 net <- mutate(net, legend="Sample network")
 tm1 <- tm_shape(cmi) + tm_raster(n=5, palette="RdYlBu", style="quantile", title = "CMI") +
     tm_shape(fda) + tm_borders(lwd=1, col="blue") +
@@ -138,7 +138,7 @@ print(tmap_arrange(tm1, tm2, tm3, tm4))
 ***
 The four plots show the distribution of density values for ConiferBirds, DeciduousBirds, MixedwoodBirds and GrasslandBirds in the ecoregion and its intersecting watersheds. The sample benchmark network is also shown on each map.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 tm1 <- tm_shape(r1) + tm_raster(palette="YlGn", style="quantile", title = "Density") +
     tm_shape(fda) + tm_borders(lwd=1, col="blue") +
     tm_shape(eco) + tm_borders(lwd=2, col="black") +
@@ -154,7 +154,7 @@ tm3 <- tm_shape(r3) + tm_raster(palette="YlGn", style="quantile", title = "Densi
     tm_shape(eco) + tm_borders(lwd=2, col="black") +
     tm_shape(net) + tm_polygons(col="legend", title="", pal="#000000", border.col="#000000", alpha=0.5, border.alpha=0.5) +
     tm_layout(main.title="MixedwoodBirds", title.position = c("left", "top"), legend.position = c("right", "top"), frame=T)
-tm4 <- tm_shape(r4) + tm_raster(palette="YlGn", style="quantile", title = "RSF") +
+tm4 <- tm_shape(r4) + tm_raster(palette="YlGn", style="quantile", title = "Density") +
     tm_shape(fda) + tm_borders(lwd=1, col="blue") +
     tm_shape(eco) + tm_borders(lwd=2, col="black") +
     tm_shape(net) + tm_polygons(col="legend", title="", pal="#000000", border.col="#000000", alpha=0.5, border.alpha=0.5) +
@@ -170,7 +170,7 @@ print(tmap_arrange(tm1, tm2, tm3, tm4))
 ***
 In step 6, we calculate representation for biophysical surrogates and test features using dissimilarity metrics. We use the KS statistic for continuous maps and the Bray-Curtis metric for categorical data (land cover). We then summarize the results in a table. No statistical analysis can be performed in this example since we only calculated representativeness for one network in one ecoregion. In the full analysis (see Paper) we evaluated 17 test features across 30 ecoregions (grouped into 4 BCRs), with each ecoregion containing upwards of several thousand networks.
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
 ks1 = calcKS(stack(cmi,gpp,led), eco, net)
 bc1 = calcBC(lcc, eco, net)
 ks2 = calcKS(stack(r1,r2,r3,r4), eco, net)
@@ -183,7 +183,7 @@ names(df) <- c("Surrogate/Feature","Description","Map type","Dissimilarity")
 knitr::kable(df, align="llll")
 ```
 
-In this example, the network we selected can be considered to be representative of the four surrogates using a threshold of 0.2 on a scale of 0-1, with lower values indicating increasing similarity. Other thresholds can be used. The KS values for the four test features are also shown in the far right column in the table. As with the surrogates, we consider test features to be representative if they have a KS values less than or equal to 0.2. This example is based on a sample size of one. By repeating this for many networks, we can model the relationship between surrogates representativeness and test features representativeness to assess whether or not a relationship exists.
+In this example, the network we selected can be considered to be representative of the four surrogates using a threshold of 0.2 on a scale of 0-1, with lower values indicating increasing similarity. Other thresholds can be used. The KS values for the four test features are also shown in the far right column in the table. As with the surrogates, we consider test features to be representative if they have a KS values less than or equal to 0.2. In this case, we can consider that 3 of the 4 test features are also representative of the ecoregion, with MixedwoodBirds being slightly above the threshold. This example is based on a sample size of one. By repeating this for many networks, we can model the relationship between surrogates representativeness and test features representativeness to assess whether or not a relationship exists.
 
 <br>
 
@@ -196,7 +196,7 @@ In the representation analysis, we want to evaluate the representation of the sa
 
 In step 7, we calculate the representation index for test features using the ratio of the proportion of test features in a network to the proportion of the network in the planning region. The table below provides the results using the representation index for the same network and species.
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
 fda_dslv <- st_union(fda) # for RI, use the FDA boundary as reference area
 ri1 = calcRI(stack(r1,r2,r3,r4), fda_dslv, net)
 ri1v = unlist(ri1[2:5])
@@ -208,9 +208,9 @@ For the test features, the sample network is considered to be representative if 
 ## Step 8 - Maximize representation
 ***
 
-In the final step of this vignette, we calculated the representation index for all representative networks (based on the four environmental surrogates) that were created for the ecoregion and we then selected the top network for each test species among all networks and among representative networks (based on surrogates).
+In the second analysis of this case study, we compare the previous approach with a complementary approach that focuses on maximizing reprensentation for the test features. To do this, we first calculate the representation index (RI) for all of the benchmark networks in the ecoregion. We then compared the RI value for the top network (based on the surrogates) to the RI values for all other networks. In the table we compare the KS and RI values for the top network (based on the surrogates) to the RI values for the top network overall i.e., among all networks in the shapefile.
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+```{r, echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
 y = calcRI(stack(r1,r2,r3,r4), fda_dslv, nets)
 #y2 = calcKS(stack(r1,r2,r3,r4), fda_dslv, nets)
 #dm = left_join(left_join(left_join(ks1, ks2), bc1), ri1) %>%
@@ -228,11 +228,11 @@ names(df) <- c('Feature','Density (range)','Top "surrogate" network (KS)', 'Top 
 knitr::kable(df, align="lcccc")
 ```
 
-The results indicate that, for each test species, the best network for that species came from the larger set of networks not just the networks that are representative for the four surrogates. We also note, that representative networks were also identified for the four species amongst the set of representative networks.
+The results indicate that, for each test species, the best network for that species came from the larger set of networks, not just the networks that are representative for the four surrogates. We also note, that representative networks were also identified for the four species amongst the set of representative networks.
 
 The map below shows the location of the top network (based on representation index) in red for ConiferBirds, DeciduousBirds, MixedwoodBirds and GrasslandBirds. The sample networks used in the previous steps is also shown in grey.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 # Select first "top" networks in case of ties
 #topKS_ConiferBirds = y2$networks[y2$ConiferBirds_ks==max(y2$ConiferBirds_ks)][1]
 #netKS_ConiferBirds = nets %>% filter(network==topKS_ConiferBirds) %>% mutate(legend="Top KS network")
@@ -273,7 +273,7 @@ tm3 <- tm_shape(r3) + tm_raster(palette="YlGn", style="quantile", title = "Densi
     #tm_shape(netKS_MixedwoodBirds) + tm_polygons(col="legend", title="", pal="blue", border.col="blue", alpha=0.65, border.alpha=0.65) +
     tm_shape(net_MixedwoodBirds) + tm_polygons(col="legend", title="", pal="#E41A1C", border.col="#E41A1C", alpha=0.65, border.alpha=0.65) +
     tm_layout(main.title="MixedwoodBirds", title.position = c("left", "top"), legend.position = c("right", "top"), frame=T)
-tm4 <- tm_shape(r4) + tm_raster(palette="YlGn", style="quantile", title = "RSF") +
+tm4 <- tm_shape(r4) + tm_raster(palette="YlGn", style="quantile", title = "Density") +
     tm_shape(fda) + tm_borders(lwd=1, col="blue") +
     tm_shape(eco) + tm_borders(lwd=2, col="black") +
     tm_shape(net) + tm_polygons(col="legend", title="", pal="#000000", border.col="#000000", alpha=0.65, border.alpha=0.65) +
