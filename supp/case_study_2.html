@@ -579,7 +579,7 @@ print(tmap_arrange(tm1, tm2, tm3, tm4))</code></pre>
 </div>
 <div id="evaluating-representativeness" class="section level1">
 <h1>Evaluating representativeness</h1>
-<p>In the representativeness analysis, we want to evaluate the representativeness of the sample network by comparing the distribution of values of each surrogate and test feature within the network to its distribution within the ecoregion (reference area).</p>
+<p>In a “representativeness” analysis, we want to evaluate the representativeness of the sample network by comparing the distribution of values of each surrogate and test feature within the network to its distribution within the ecoregion (reference area).</p>
 <div id="step-6---calculate-dissimilarity" class="section level2">
 <h2>Step 6 - Calculate dissimilarity</h2>
 <hr />
@@ -660,11 +660,15 @@ knitr::kable(df, align=&quot;llll&quot;)</code></pre>
 </div>
 <div id="maximizing-representation" class="section level1">
 <h1>Maximizing representation</h1>
-<p>In the representation analysis, we want to evaluate the representation of the sample network by calculating the proportion of values of each test feature within the network to its proportion with the ecoregion and intersecting watersheds (reference area).</p>
+<p>In a “representation” analysis, we want to evaluate the representation of the sample network by calculating the proportion of values of each test feature within the network to its proportion with the ecoregion and intersecting watersheds (reference area).</p>
 <div id="step-7---calculate-representation" class="section level2">
 <h2>Step 7 - Calculate representation</h2>
 <hr />
-<p>In step 7, we calculate the representation index for test features using the ratio of the proportion of test features in a network to the proportion of the network in the planning region. The table below provides the results using the representation index for the same network and species.</p>
+<p>In step 7, we calculate the representation index (RI) for the test features using the ratio of the proportion of test features in a network to the proportion of the network in the planning region:</p>
+<center>
+RI = (area of test feature in network / area of network) / (area of network / area of planning region)
+</center>
+<p>A sample network is considered to be representative if the representation index has a value that is close to or greater than 1. The table below provides the results for the four test features using same network we used previously i.e., the top network based on the four surrogates. For this example, representation is considered to be adequate for all four test features.</p>
 <pre class="r"><code>fda_dslv &lt;- st_union(fda) # for RI, use the FDA boundary as reference area
 ri1 = calcRI(stack(r1,r2,r3,r4), fda_dslv, net)
 ri1v = unlist(ri1[2:5])
@@ -675,12 +679,11 @@ cat(&quot;Representation Index\n--------------------\n&quot;,&quot;ConiferBirds:
 ##  DeciduousBirds: 1.43 
 ##  MixedwoodBrids: 1.56 
 ##  GrasslandBirds: 1.02</code></pre>
-<p>For the test features, the sample network is considered to be representative if the representation index has a value that is close to or greater than 1.</p>
 </div>
 <div id="step-8---maximize-representation" class="section level2">
 <h2>Step 8 - Maximize representation</h2>
 <hr />
-<p>In the second analysis of this case study, we compare the previous approach with a complementary approach that focuses on maximizing reprensentation for the test features. To do this, we first calculate the representation index (RI) for all of the benchmark networks in the ecoregion. We then compared the RI value for the top network (based on the surrogates) to the RI values for all other networks. In the table we compare the KS and RI values for the top network (based on the surrogates) to the RI values for the top network overall i.e., among all networks in the shapefile.</p>
+<p>If our focuse is on maximizing representation for a particular test feature, we may want to calculate RI for all networks in the ecoregion, not just the top network based on the surrogates. We can then select the top network for each test feature. In the table below, we compare the KS and RI values for the top network (based on the surrogates) to the RI values for the top network overall i.e., among all networks in the shapefile.</p>
 <pre class="r"><code>y = calcRI(stack(r1,r2,r3,r4), fda_dslv, nets)
 #y2 = calcKS(stack(r1,r2,r3,r4), fda_dslv, nets)
 #dm = left_join(left_join(left_join(ks1, ks2), bc1), ri1) %&gt;%
@@ -734,8 +737,7 @@ cat(&quot;Representation Index\n--------------------\n&quot;,&quot;ConiferBirds:
 </tr>
 </tbody>
 </table>
-<p>The results indicate that, for each test species, the best network for that species came from the larger set of networks, not just the networks that are representative for the four surrogates. We also note, that representative networks were also identified for the four species amongst the set of representative networks.</p>
-<p>The map below shows the location of the top network (based on representation index) in red for ConiferBirds, DeciduousBirds, MixedwoodBirds and GrasslandBirds. The sample networks used in the previous steps is also shown in grey.</p>
+<p>The results indicate that, for each test feature, the best network for that feature came from the larger set of networks, not the top network that was representative for the four surrogates. The map below shows the location of the top network (based on representation index) in red for ConiferBirds, DeciduousBirds, MixedwoodBirds and GrasslandBirds. The sample networks used in the previous steps is also shown in grey.</p>
 <pre class="r"><code># Select first &quot;top&quot; networks in case of ties
 #topKS_ConiferBirds = y2$networks[y2$ConiferBirds_ks==max(y2$ConiferBirds_ks)][1]
 #netKS_ConiferBirds = nets %&gt;% filter(network==topKS_ConiferBirds) %&gt;% mutate(legend=&quot;Top KS network&quot;)
