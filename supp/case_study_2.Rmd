@@ -211,7 +211,7 @@ cat("Representation Index\n--------------------\n","ConiferBirds:", sprintf("%.2
 ## Step 8 - Maximize representation
 ***
 
-If our focuse is on maximizing representation for a particular test feature, we may want to calculate RI for all networks in the ecoregion,  not just the top network based on the surrogates. We can then select the top network for each test feature. In the table below, we compare the KS and RI values for the top network (based on the surrogates) to the RI values for the top network overall i.e., among all networks in the shapefile.
+If our focus is on maximizing representation for a particular test feature, we may want to calculate RI for all networks in the ecoregion,  not just the top network based on the surrogates. We can then select the top network for each test feature. In the table below, we compare the KS and RI values for the top network (based on the surrogates) to the RI values for the top network overall i.e., among all networks in the shapefile.
 
 ```{r, echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
 y = calcRI(stack(r1,r2,r3,r4), fda_dslv, nets)
