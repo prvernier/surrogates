@@ -668,6 +668,7 @@ knitr::kable(df, align=&quot;llll&quot;)</code></pre>
 <center>
 RI = (area of test feature in network / area of network) / (area of network / area of planning region)
 </center>
+<p><br></p>
 <p>A sample network is considered to be representative if the representation index has a value that is close to or greater than 1. The table below provides the results for the four test features using same network we used previously i.e., the top network based on the four surrogates. For this example, representation is considered to be adequate for all four test features.</p>
 <pre class="r"><code>fda_dslv &lt;- st_union(fda) # for RI, use the FDA boundary as reference area
 ri1 = calcRI(stack(r1,r2,r3,r4), fda_dslv, net)

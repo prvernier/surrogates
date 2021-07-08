@@ -198,6 +198,8 @@ In step 7, we calculate the representation index (RI) for the test features usin
 
 <center>RI = (area of test feature in network / area of network) / (area of network / area of planning region)</center>
 
+<br>
+
 A sample network is considered to be representative if the representation index has a value that is close to or greater than 1. The table below provides the results for the four test features using same network we used previously i.e., the top network based on the four surrogates. For this example, representation is considered to be adequate for all four test features.
 
 
