@@ -1,0 +1,212 @@
+---
+title: "Building and filtering networks"
+output: 
+  html_document:
+    fig_caption: yes
+---
+<br>
+
+## MDR-based targets for representation
+
+We constructed networks for each ecoregion by combining multiple benchmarks and assessing the ability of each network to represent its respective ecoregion for the four surrogates. We assessed network representation using a target-based method and the MDR value. The MDR-based representation targets were based on the proportional coverage of the surrogates within networks. 
+
+The target-based method required that the study region maps of continuous surrogates be assigned to classes. CMI was classified using class widths of 5 cm water/yr, GPP and LED were classified into class widths of 0.05 kg C/m2/yr and 0.025 km/km2 respectively. Representation was assessed by comparing the area of each class inside the network to MDR-based targets for the ecoregion. 
+
+MDR-based targets for each class were calculated by multiplying the proportion of the class in the ecoregion by the MDR. For example, if the class made up 10% of the ecoregion, the target would be 0.1 x MDR. For an MDR-based target to be achieved, a single benchmark in the network must contain at least 90% of the target area. We used a 90% threshold because requiring the full target to be met limited the networks available for analysis. We also dropped targets for rare classes making up less than 5% of the ecoregion.
+
+The MDR-based targets were first assessed for networks made up of one benchmark, if all targets were not met, additional benchmarks were iteratively added until all targets were met.
+
+The following maps and tables demonstrate the MDR-based representation method using an example network of two benchmarks:
+
+* Green rows show passed targets
+* Red rows show failed targets
+* White rows show rare classes that were dropped
+* Note that LED is very low in this ecoregion, so all non-zero classes are considered rare
+* In this example, all non-rare class targets are met with the exception of the barren-lichen-moss class in the land cover map
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(raster)
+library(kableExtra)
+library(ggplot2)
+library(ggthemes)
+library(sf)
+library(viridis)
+library(gridExtra)
+```
+
+```{r, include = FALSE}
+# Get network polygon
+nets <- st_read("networks/eco_170_networks_i80_t100_pb2_pas0.shp")
+net1_shp <- nets[nets$netName=="PB_196152_PB_200624",]
+benchmarks <- shapefile("benchmarks/eco_170_benchmarks.shp")
+
+res_list <- list()
+for(crit in c("cmi", "gpp", "led", "lcc")){
+  
+  # get targets
+  targets <- read.csv(paste0("eco_170_target_", crit, ".csv"))
+  targets$surrogate <- toupper(crit)
+  
+  # Open target maps
+  #eco_map <- raster(paste0("170/raster_eco/", crit, ".tif"))
+  fda_map <- raster(paste0("170/raster_fda/", crit, ".tif"))
+  
+  # classify map
+  if(crit == "cmi"){brks <- c(seq(-20,100,5),1000)}
+  if(crit == "gpp"){brks <- c(seq(0,7500,500),10000)}
+  if(crit == "led"){brks <- c(-1, seq(0,1750,250),10000)}
+  
+  if(crit %in% c("cmi", "led", "gpp")){
+    fda_map_class <- cut(fda_map, brks)
+  } else{
+    fda_map_class <- fda_map
+  }
+  
+  # get area of each class in each benchmark making up the networks. 
+  for(pb in c("PB_196152", "PB_200624")){
+    benchmark <- benchmarks[benchmarks$pb == pb,]
+    pa_map <- mask(fda_map_class, benchmark)
+    pa_map_df <- as.data.frame(freq(pa_map))
+    pa_map_df <- pa_map_df[!is.na(pa_map_df$value),]
+    pb_area <- paste0(pb, "_area")
+    targets[[pb_area]] <- 0
+    for(c in pa_map_df$value){
+      targets[[pb_area]][targets$class == c] <- pa_map_df$count[pa_map_df$value == c]
+    }
+  }
+  
+  targets$target_km2_90 <- targets$target_km2 * 0.9
+  targets$target_rare <- ifelse(targets$bnd_prop >=0.05, "No", "Yes")
+  targets$bnd_prop <- round(targets$bnd_prop * 100, 2)
+  
+  targets$pass <- "Fail"
+  for(class in targets$class){
+    if(max(targets$PB_196152[targets$class == class], targets$PB_200624[targets$class == class]) >= targets$target_km2[targets$class == class]){
+      targets$pass[targets$class == class] <- "Pass"
+    }
+  }
+  targets$pass[targets$target_rare == "Yes"] <- "NA"
+  
+  
+  targets <- targets[c(9,1,2,3,12,5,13,10,11,14)]
+  if(crit == "lcc"){
+    names(targets) <- c("Surrogate", "Class", "Description", "Target (km2)", "Target (km2) 90%", "Target % of ecoregion", "Rare target?", "PB 196152 (km2)", "PB 200624 (km2)", "Target passed?")
+  } else{
+    names(targets) <- c("Surrogate", "Class", "Range", "Target (km2)", "Target (km2) 90%", "Target % of ecoregion", "Rare target?", "PB 196152 (km2)", "PB 200624 (km2)", "Target passed?")
+  }
+  res_list[[crit]] <- targets
+  
+}
+```
+
+### CMI
+```{r, echo=FALSE, warning=FALSE, fig.align='center'}
+rows_green <- as.numeric(row.names(res_list[["cmi"]][res_list[["cmi"]]$`Rare target?` == "No" & res_list[["cmi"]]$`Target passed?` == "Pass",]))
+rows_red <- as.numeric(row.names(res_list[["cmi"]][res_list[["cmi"]]$`Rare target?` == "No" & res_list[["cmi"]]$`Target passed?` == "Fail",]))
+res_list[["cmi"]] %>% kbl() %>% kable_minimal() %>% row_spec(rows_red, bold = T, color = "white", background = "#c5481b") %>% row_spec(rows_green, bold = T, color = "white", background = "#7ca971")
+
+ggplot() +  
+  geom_tile(data=as.data.frame(as(cut(raster(paste0("170/raster_fda/cmi.tif")), c(seq(-20,100,5),1000)),"SpatialPixelsDataFrame")), aes(x=x, y=y, fill=layer), alpha=0.8) + 
+  geom_sf(data=net1_shp, fill=NA, color="black", size=1) +
+  scale_fill_viridis(option = "cividis") +
+  theme_map() +
+  theme(legend.position="bottom") +
+  theme(legend.key.width=unit(2, "cm")) +
+  labs(fill='CMI') 
+```
+
+---
+
+<br />
+
+### GPP
+```{r, echo=FALSE, warning=FALSE, fig.align='center'}
+rows_green <- as.numeric(row.names(res_list[["gpp"]][res_list[["gpp"]]$`Rare target?` == "No" & res_list[["gpp"]]$`Target passed?` == "Pass",]))
+rows_red <- as.numeric(row.names(res_list[["gpp"]][res_list[["gpp"]]$`Rare target?` == "No" & res_list[["gpp"]]$`Target passed?` == "Fail",]))
+res_list[["gpp"]] %>% kbl() %>% kable_minimal() %>% row_spec(rows_red, bold = T, color = "white", background = "#c5481b") %>% row_spec(rows_green, bold = T, color = "white", background = "#7ca971")
+
+ggplot() +  
+  geom_tile(data=as.data.frame(as(cut(raster(paste0("170/raster_fda/gpp.tif")), c(seq(0,7500,500),10000)),"SpatialPixelsDataFrame")), aes(x=x, y=y, fill=layer), alpha=0.8) + 
+  geom_sf(data=net1_shp, fill=NA, color="black", size=1) +
+  scale_fill_viridis(option = "cividis") +
+  theme_map() +
+  theme(legend.position="bottom") +
+  theme(legend.key.width=unit(2, "cm")) +
+  labs(fill='GPP')
+```
+
+---
+
+<br />
+
+### LED
+```{r, echo=FALSE, warning=FALSE, fig.align='center'}
+rows_green <- as.numeric(row.names(res_list[["led"]][res_list[["led"]]$`Rare target?` == "No" & res_list[["led"]]$`Target passed?` == "Pass",]))
+rows_red <- as.numeric(row.names(res_list[["led"]][res_list[["led"]]$`Rare target?` == "No" & res_list[["led"]]$`Target passed?` == "Fail",]))
+res_list[["led"]] %>% kbl() %>% kable_minimal() %>% row_spec(rows_red, bold = T, color = "white", background = "#c5481b") %>% row_spec(rows_green, bold = T, color = "white", background = "#7ca971")
+
+ggplot() +  
+  geom_tile(data=as.data.frame(as(cut(raster(paste0("170/raster_fda/led.tif")), c(-1, seq(0,1750,250),10000)),"SpatialPixelsDataFrame")), aes(x=x, y=y, fill=layer), alpha=0.8) + 
+  geom_sf(data=net1_shp, fill=NA, color="black", size=1) +
+  #scale_fill_gradient(low="light grey", high="black") +
+  scale_fill_viridis(option = "cividis") +
+  theme_map() +
+  theme(legend.position="bottom") +
+  theme(legend.key.width=unit(2, "cm")) +
+  labs(fill='LED')
+```
+
+---
+
+<br />
+
+### LCC
+```{r, echo=FALSE, warning=FALSE, fig.align='center'}
+rows_green <- as.numeric(row.names(res_list[["lcc"]][res_list[["lcc"]]$`Rare target?` == "No" & res_list[["lcc"]]$`Target passed?` == "Pass",]))
+rows_red <- as.numeric(row.names(res_list[["lcc"]][res_list[["lcc"]]$`Rare target?` == "No" & res_list[["lcc"]]$`Target passed?` == "Fail",]))
+res_list[["lcc"]] %>% kbl() %>% kable_minimal() %>% row_spec(rows_red, bold = T, color = "white", background = "#c5481b") %>% row_spec(rows_green, bold = T, color = "white", background = "#7ca971")
+
+ggplot() +  
+  geom_tile(data=as.data.frame(as(raster(paste0("170/raster_fda/lcc.tif")),"SpatialPixelsDataFrame")), aes(x=x, y=y, fill=lcc), alpha=0.8) + 
+  geom_sf(data=net1_shp, fill=NA, color="black", size=1) +
+  scale_fill_viridis(option = "cividis") +
+  theme_map() +
+  theme(legend.position="bottom") +
+  theme(legend.key.width=unit(2, "cm")) +
+  labs(fill='LCC')
+```
+
+## Filtering networks
+
+Building networks using all combinations of benchmarks creates large numbers of networks with high levels of overlap. To remove redundant networks we used a grid-based clustering method:
+
+* Individual benchmarks were assigned IDs based on a 10km grid, benchmarks with a centroid falling in the same grid cell received the same ID. 
+* Networks were then clustered into groups with matching combinations of benchmark IDs. 
+* The best network from each cluster was selected as the one with the lowest Euclidean distance value for the four biophysical criteria, calculated using a vector of the four surrogate dissimilarity values. 
+  * Dissimilarity values were calculated by comparing the surrogates’ distribution in each network to its distribution in the ecoregion. For the three continuous surrogates, GPP, CMI and LED, we used the Kolmogorov-Smirnov (KS) statistic. For the categorical LCC surrogate we used the Bray-Curtis statistic. 
+* All other networks were removed from the analysis.
+* We found this method to be good at clustering highly overlapping networks and therefore reducing redundancy in the network sample.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align="center", fig.cap="Example of grid based filtering showing the location of benchmarks within the ecoregion on the left, and the benchmarks centroids intersected with the 10km grid on the right."}
+fish <- st_read("170/cluster/eco_170_10000km_fishnet.shp", quiet = TRUE)
+centroids <- st_read("170/cluster/eco_170_10000km_BA_join.shp", quiet = TRUE)
+eco_bnd <- st_read("170/vector/eco.shp", quiet = TRUE)
+benchmarks_sf <- st_read("benchmarks/eco_170_benchmarks.shp", quiet = TRUE)
+
+p1 <- ggplot() +
+  geom_sf(data=benchmarks_sf, aes(colour = as.factor(mdr)), show.legend = "line") + 
+  geom_sf(data=eco_bnd, fill=NA, aes(colour = as.factor(Ecoregion)), size=1, show.legend = "line") +
+  scale_color_manual(name = "", values = c("black", "#872223"), labels = c("Ecoregion", "Benchmarks")) +
+  theme(legend.position="bottom")
+
+p2 <- ggplot() +
+  geom_sf(data=centroids, aes(colour = "Centroids"), size=1, show.legend = "point") + 
+  geom_sf(data=eco_bnd, fill=NA, aes(colour = "Ecoregion"), size=1, show.legend = "line") +
+  geom_sf(data=fish, fill=NA, aes(colour = "10km grid"), show.legend = "line", size = 0.1) + 
+  scale_color_manual(name = "", values = c("Centroids" = "#872223", "Ecoregion" = "black", "10km grid" = "#444444"), guide = guide_legend(override.aes = list(linetype = c("solid", "blank", "solid"), shape = c(NA, 16, NA), size = c(0.5,1,1)))) +
+  theme(legend.position="bottom")
+
+grid.arrange(p1,p2,ncol=2)
+```
