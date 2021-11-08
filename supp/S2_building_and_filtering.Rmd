@@ -1,12 +1,14 @@
 ---
-title: "Building and filtering networks"
-output: 
+title: "Appendix S2. Building and filtering networks"
+output:
   html_document:
-    fig_caption: yes
+    keep_md: false
+    code_folding: hide
+    css: styles.css
 ---
 <br>
 
-## MDR-based targets for representation
+# MDR-based targets for representation
 
 We constructed networks for each ecoregion by combining multiple benchmarks and assessing the ability of each network to represent its respective ecoregion for the four surrogates. We assessed network representation using a target-based method and the MDR value. The MDR-based representation targets were based on the proportional coverage of the surrogates within networks. 
 
@@ -101,7 +103,8 @@ for(crit in c("cmi", "gpp", "led", "lcc")){
 }
 ```
 
-### CMI
+## CMI
+
 ```{r, echo=FALSE, warning=FALSE, fig.align='center'}
 rows_green <- as.numeric(row.names(res_list[["cmi"]][res_list[["cmi"]]$`Rare target?` == "No" & res_list[["cmi"]]$`Target passed?` == "Pass",]))
 rows_red <- as.numeric(row.names(res_list[["cmi"]][res_list[["cmi"]]$`Rare target?` == "No" & res_list[["cmi"]]$`Target passed?` == "Fail",]))
@@ -121,7 +124,8 @@ ggplot() +
 
 <br />
 
-### GPP
+## GPP
+
 ```{r, echo=FALSE, warning=FALSE, fig.align='center'}
 rows_green <- as.numeric(row.names(res_list[["gpp"]][res_list[["gpp"]]$`Rare target?` == "No" & res_list[["gpp"]]$`Target passed?` == "Pass",]))
 rows_red <- as.numeric(row.names(res_list[["gpp"]][res_list[["gpp"]]$`Rare target?` == "No" & res_list[["gpp"]]$`Target passed?` == "Fail",]))
@@ -141,7 +145,8 @@ ggplot() +
 
 <br />
 
-### LED
+## LED
+
 ```{r, echo=FALSE, warning=FALSE, fig.align='center'}
 rows_green <- as.numeric(row.names(res_list[["led"]][res_list[["led"]]$`Rare target?` == "No" & res_list[["led"]]$`Target passed?` == "Pass",]))
 rows_red <- as.numeric(row.names(res_list[["led"]][res_list[["led"]]$`Rare target?` == "No" & res_list[["led"]]$`Target passed?` == "Fail",]))
@@ -162,7 +167,8 @@ ggplot() +
 
 <br />
 
-### LCC
+## LCC
+
 ```{r, echo=FALSE, warning=FALSE, fig.align='center'}
 rows_green <- as.numeric(row.names(res_list[["lcc"]][res_list[["lcc"]]$`Rare target?` == "No" & res_list[["lcc"]]$`Target passed?` == "Pass",]))
 rows_red <- as.numeric(row.names(res_list[["lcc"]][res_list[["lcc"]]$`Rare target?` == "No" & res_list[["lcc"]]$`Target passed?` == "Fail",]))
@@ -178,7 +184,7 @@ ggplot() +
   labs(fill='LCC')
 ```
 
-## Filtering networks
+# Filtering networks
 
 Building networks using all combinations of benchmarks creates large numbers of networks with high levels of overlap. To remove redundant networks we used a grid-based clustering method:
 
