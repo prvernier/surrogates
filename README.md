@@ -16,7 +16,7 @@ Beacons et al. <i>in prep</i>. Evaluating the Effectiveness of Biodiversity Surr
   - [Appendix S2](https://htmlpreview.github.io/?https://github.com/prvernier/surrogates/blob/master/supp/S2_building_and_filtering.html). Building and filtering networks.
   - [Appendix S3](supp/S3_networks_and_ecoregions.csv). Table summarizing the number of networks by ecoregion.
   - [Appendix S4a](supp/S4a_rep_sumDensity.csv). Table of results for objectives 1 and 2 using the sum of density approach.
-  - [Appendix S4a](supp/S4b_rep_meanDissim.csv). Table of results for objectives 1 and 2 using the mean dissimilarity approach.
+  - [Appendix S4b](supp/S4b_rep_meanDissim.csv). Table of results for objectives 1 and 2 using the mean dissimilarity approach.
 
 ## Case Study
 
